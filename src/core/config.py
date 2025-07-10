@@ -12,9 +12,9 @@ class Settings:
     
     # Database
     DB_NAME = os.getenv("DB_NAME", "voltio")
-    DB_USER = os.getenv("DB_USER", "usuario")
-    DB_PASSWORD = os.getenv("DB_PASSWORD", "contraseña")
-    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_USER = os.getenv("DB_USER", "voltio_user")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "voltio_pass")
+    DB_HOST = os.getenv("DB_HOST", "18.214.35.249")
     DB_PORT = os.getenv("DB_PORT", "5432")
     
     # Database URL

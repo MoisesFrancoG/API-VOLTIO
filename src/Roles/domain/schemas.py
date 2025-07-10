@@ -10,7 +10,7 @@ class RolBase(BaseModel):
     descripcion: str
 
     class Config:
-        orm_mode = True  # Permite trabajar con objetos de ORMs como SQLAlchemy
+        from_attributes = True  # Permite trabajar con objetos de ORMs como SQLAlchemy
 
 
 class RolCreate(RolBase):
@@ -24,9 +24,12 @@ class RolUpdate(BaseModel):
     descripcion: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class RolResponse(RolBase):
     """Esquema de respuesta para mostrar un rol"""
     id_rol: int
+
+    class Config:
+        from_attributes = True
