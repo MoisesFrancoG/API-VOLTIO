@@ -16,6 +16,11 @@ class Settings:
     DB_PASSWORD = os.getenv("DB_PASSWORD", "voltio_pass")
     DB_HOST = os.getenv("DB_HOST", "18.214.35.249")
     DB_PORT = os.getenv("DB_PORT", "5432")
+    # InfluxDB
+    INFLUX_URL = os.getenv("INFLUX_URL", "http://52.201.107.193:8086")
+    INFLUX_TOKEN = os.getenv("INFLUX_TOKEN", "lJLzxtHLHvPNgdvU9dcInGYb/qLbLxUPgrePzLd47EKCLUWBzJ+RmJkpH0f1HkmQ")
+    INFLUX_ORG = os.getenv("INFLUX_ORG", "mi-org")
+    INFLUX_BUCKET = os.getenv("INFLUX_BUCKET", "sensores")
     
     # Database URL
     database_url = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
@@ -32,6 +37,8 @@ class Settings:
     # Environment
     environment = os.getenv("ENVIRONMENT", "development")
     debug = os.getenv("DEBUG", "True").lower() == "true"
+    
+    
 
 
 settings = Settings()
