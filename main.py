@@ -3,6 +3,12 @@ from src.core.db import engine, Base
 from src.Roles.infrastructure.routers import router as roles_router
 from src.Usuarios.infrastructure.routers import router as usuarios_router
 from src.Lecturas_influx_pzem.infrastructure.routers import router as lecturas_router
+from src.Ubicaciones.infrastructure.routers import router as ubicaciones_router
+from src.TipoSensores.infrastructure.routers import router as tipo_sensores_router
+from src.ComandosIR.infrastructure.routers import router as comandos_ir_router
+from src.Alertas.infrastructure.routers import router as alertas_router
+from src.Lecturas.infrastructure.routers import router as lecturas_sql_router
+from src.Sensores.infrastructure.routers import router as sensores_router
 from src.core.db_influx import close_influx_client
 
 # Crear las tablas de la base de datos
@@ -18,6 +24,12 @@ app = FastAPI(
 app.include_router(roles_router, prefix="/api/v1")
 app.include_router(usuarios_router, prefix="/api/v1")
 app.include_router(lecturas_router, prefix="/api/v1/lecturas-pzem")
+app.include_router(ubicaciones_router, prefix="/api/v1")
+app.include_router(tipo_sensores_router, prefix="/api/v1")
+app.include_router(comandos_ir_router, prefix="/api/v1")
+app.include_router(alertas_router, prefix="/api/v1")
+app.include_router(lecturas_sql_router, prefix="/api/v1")
+app.include_router(sensores_router, prefix="/api/v1")
 
 
 @app.on_event("shutdown")
