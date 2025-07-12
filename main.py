@@ -8,6 +8,7 @@ from src.TipoSensores.infrastructure.routers import router as tipo_sensores_rout
 from src.ComandosIR.infrastructure.routers import router as comandos_ir_router
 from src.Alertas.infrastructure.routers import router as alertas_router
 from src.Lecturas.infrastructure.routers import router as lecturas_sql_router
+from src.Sensores.infrastructure.routers import router as sensores_router
 from src.core.db_influx import close_influx_client
 
 # Crear las tablas de la base de datos
@@ -28,6 +29,7 @@ app.include_router(tipo_sensores_router, prefix="/api/v1")
 app.include_router(comandos_ir_router, prefix="/api/v1")
 app.include_router(alertas_router, prefix="/api/v1")
 app.include_router(lecturas_sql_router, prefix="/api/v1")
+app.include_router(sensores_router, prefix="/api/v1")
 
 
 @app.on_event("shutdown")
