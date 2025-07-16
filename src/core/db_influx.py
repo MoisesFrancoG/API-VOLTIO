@@ -2,10 +2,10 @@ from influxdb_client import InfluxDBClient
 from .config import settings  # Asumo que añadirás la config de influx a tu config.py
 
 # --- CONFIGURACIÓN DE INFLUXDB (Obtenida de tu archivo de settings) ---
-INFLUX_URL = settings.INFLUX_URL
-INFLUX_TOKEN = settings.INFLUX_TOKEN
-INFLUX_ORG = settings.INFLUX_ORG
-INFLUX_BUCKET = settings.INFLUX_BUCKET
+INFLUX_URL = settings.influx_url
+INFLUX_TOKEN = settings.influx_token
+INFLUX_ORG = settings.influx_org
+INFLUX_BUCKET = settings.influx_bucket
 
 # --- CLIENTE SINGLETON ---
 # Creamos una única instancia del cliente para ser reutilizada en toda la app
