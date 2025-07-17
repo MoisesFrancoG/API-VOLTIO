@@ -1,4 +1,41 @@
+# Entorno virtual Python
 venv/
+
+# Cache Python
 __pycache__/
 *.pyc
+*.pyo
+
+# Archivos de configuración sensibles
 .env
+.env.*
+*.env
+
+# Claves SSH y certificados
+*.pem
+*.key
+*.crt
+*.p12
+
+# Archivos de base de datos locales
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos específicos del proyecto
+ssh_tunnel.pid
+tunnel.log
