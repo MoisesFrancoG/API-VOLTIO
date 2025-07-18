@@ -8,6 +8,7 @@ from src.Lecturas_influx_pzem.application.interfaces import LecturaRepositoryInt
 from src.Lecturas_influx_pzem.domain.schemas import LecturaPZEMResponse, TimeRange
 from src.core.db_influx import get_influx_query_api, INFLUX_BUCKET
 
+
 class InfluxDBLecturaRepository(LecturaRepositoryInterface):
     """Implementación del repositorio usando el cliente de InfluxDB."""
 
@@ -16,11 +17,11 @@ class InfluxDBLecturaRepository(LecturaRepositoryInterface):
 
     # --- CAMBIO EN LA FIRMA DEL MÉTODO ---
     def get_by_time_range(
-        self, 
-        time_range: TimeRange, 
+        self,
+        time_range: TimeRange,
         mac: str | None = None
     ) -> List[LecturaPZEMResponse]:
-        
+
         # Construcción de la consulta Flux
         flux_query = f'''
         from(bucket: "{INFLUX_BUCKET}")
@@ -33,18 +34,34 @@ class InfluxDBLecturaRepository(LecturaRepositoryInterface):
         if mac:
             # Filtramos por el tag 'mac' en lugar de 'deviceId'
             flux_query += f'  |> filter(fn: (r) => r["mac"] == "{mac}")'
-        
+
         # Pivotamos para tener los campos como columnas, lo que facilita el mapeo
         flux_query += '  |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")'
 
         try:
             tables = self.query_api.query(flux_query)
-            
+
             # Mapeamos los resultados a nuestro esquema Pydantic
             results = []
             for table in tables:
                 for record in table.records:
-                    results.append(LecturaPZEMResponse.model_validate(record.values))
+                    try:
+                        # Preparamos los datos para el modelo
+                        data = record.values.copy()
+
+                        # Si no hay deviceId, usamos el mac como deviceId
+                        if 'deviceId' not in data and 'mac' in data:
+                            data['deviceId'] = data['mac']
+
+                        # Validamos y agregamos el resultado
+                        lectura = LecturaPZEMResponse.model_validate(data)
+                        results.append(lectura)
+                    except Exception as validation_error:
+                        # Log del error para debugging
+                        print(f"Error validando datos: {validation_error}")
+                        print(f"Datos recibidos: {record.values}")
+                        continue  # Saltamos este registro y continuamos con el siguiente
+
             return results
         except InfluxDBError as e:
             raise HTTPException(

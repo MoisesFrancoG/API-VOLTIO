@@ -1,11 +1,13 @@
 from datetime import datetime
 
+
 class LecturaPZEM:
     """Entidad de dominio para una lectura del PZEM."""
+
     def __init__(
         self,
         time: datetime,
-        deviceId: str,
+        deviceId: str | None,
         mac: str,
         voltage: float,
         current: float,

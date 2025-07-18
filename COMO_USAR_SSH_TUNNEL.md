@@ -1,6 +1,7 @@
 # Guía Completa: Despliegue de API Voltio en EC2 con GitHub Actions
 
 ## 📋 Tabla de Contenidos
+
 1. [Configuración inicial de EC2](#configuración-inicial-de-ec2)
 2. [Preparación del servidor Ubuntu](#preparación-del-servidor-ubuntu)
 3. [Configuración de la base de datos](#configuración-de-la-base-de-datos)
@@ -14,6 +15,7 @@
 ## 🚀 Configuración inicial de EC2
 
 ### 1. Crear instancia EC2
+
 1. **Inicia sesión en AWS Console**
 2. **Ir a EC2 Dashboard**
 3. **Launch Instance** con la siguiente configuración:
@@ -28,12 +30,14 @@
    - **Storage**: 20 GB mínimo
 
 ### 2. Configurar Elastic IP (Recomendado)
+
 ```bash
 # En AWS Console, ir a EC2 > Elastic IPs
 # Allocate new address y asociar con la instancia
 ```
 
 ### 3. Configurar dominio (opcional)
+
 - Configura un registro A en tu DNS apuntando a la Elastic IP
 - Ejemplo: `api.tudominio.com` → `tu-elastic-ip`
 
@@ -42,17 +46,20 @@
 ## 🛠️ Preparación del servidor Ubuntu
 
 ### 1. Conectar via SSH
+
 ```bash
 # Desde tu máquina local
 ssh -i "tu-key.pem" ubuntu@tu-elastic-ip
 ```
 
 ### 2. Actualizar sistema
+
 ```bash
 sudo apt update && sudo apt upgrade -y
 ```
 
 ### 3. Instalar dependencias del sistema
+
 ```bash
 # Python y herramientas de desarrollo
 sudo apt install -y python3 python3-pip python3-venv git curl software-properties-common
@@ -71,6 +78,7 @@ sudo apt install -y htop tree unzip
 ```
 
 ### 4. Configurar usuario deploy (recomendado)
+
 ```bash
 # Crear usuario para despliegues
 sudo adduser deploy
@@ -89,6 +97,7 @@ sudo chmod 600 /home/deploy/.ssh/authorized_keys
 ## 🗄️ Configuración de la base de datos
 
 ### Opción A: PostgreSQL local
+
 ```bash
 # Configurar PostgreSQL
 sudo -u postgres createuser --interactive
@@ -107,6 +116,7 @@ postgres=# \q
 ```
 
 ### Opción B: Base de datos externa (RDS, etc.)
+
 - Configurar RDS PostgreSQL en AWS
 - Anotar: host, port, database, username, password
 
@@ -115,6 +125,7 @@ postgres=# \q
 ## 📦 Despliegue manual inicial
 
 ### 1. Clonar repositorio
+
 ```bash
 # Cambiar a usuario deploy
 sudo su - deploy
@@ -125,6 +136,7 @@ cd API-VOLTIO
 ```
 
 ### 2. Configurar entorno Python
+
 ```bash
 # Crear entorno virtual
 python3 -m venv venv
@@ -136,6 +148,7 @@ pip install -r requirements.txt
 ```
 
 ### 3. Configurar variables de entorno
+
 ```bash
 # Crear archivo .env
 cp .env.example .env  # Si existe
@@ -144,6 +157,7 @@ nano .env
 ```
 
 **Contenido del archivo `.env`:**
+
 ```env
 # Base de datos PostgreSQL
 DB_NAME=voltio_db
@@ -179,6 +193,7 @@ DEBUG=false
 ```
 
 ### 4. Probar la aplicación
+
 ```bash
 # Activar entorno virtual
 source venv/bin/activate
@@ -194,12 +209,14 @@ curl http://localhost:8000/
 ```
 
 ### 5. Configurar Supervisor
+
 ```bash
 # Crear configuración de supervisor
 sudo nano /etc/supervisor/conf.d/voltio-api.conf
 ```
 
 **Contenido del archivo supervisor:**
+
 ```ini
 [program:voltio-api]
 command=/home/deploy/API-VOLTIO/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
@@ -223,12 +240,14 @@ sudo supervisorctl status
 ```
 
 ### 6. Configurar Nginx
+
 ```bash
 # Crear configuración de Nginx
 sudo nano /etc/nginx/sites-available/voltio-api
 ```
 
 **Contenido de Nginx:**
+
 ```nginx
 server {
     listen 80;
@@ -261,6 +280,7 @@ sudo systemctl restart nginx
 ```
 
 ### 7. Configurar SSL con Let's Encrypt
+
 ```bash
 # Instalar Certbot
 sudo apt install -y certbot python3-certbot-nginx
@@ -277,12 +297,14 @@ sudo certbot renew --dry-run
 ## ⚙️ Configuración de GitHub Actions
 
 ### 1. Crear directorio de workflows
+
 ```bash
 # En tu repositorio local
 mkdir -p .github/workflows
 ```
 
 ### 2. Crear archivo de workflow
+
 Crear `.github/workflows/deploy.yml`:
 
 ```yaml
@@ -290,14 +312,14 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:13
@@ -314,69 +336,69 @@ jobs:
           - 5432:5432
 
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-asyncio httpx
-    
-    - name: Create test .env file
-      run: |
-        echo "DB_NAME=testdb" >> .env
-        echo "DB_USER=testuser" >> .env
-        echo "DB_PASSWORD=testpass" >> .env
-        echo "DB_HOST=localhost" >> .env
-        echo "DB_PORT=5432" >> .env
-        echo "INFLUX_URL=http://localhost:8086" >> .env
-        echo "INFLUX_TOKEN=test-token" >> .env
-        echo "INFLUX_ORG=test-org" >> .env
-        echo "INFLUX_BUCKET=test-bucket" >> .env
-        echo "SECRET_KEY=test-secret-key" >> .env
-        echo "SSH_TUNNEL_ENABLED=false" >> .env
-    
-    - name: Run tests
-      run: |
-        python -m pytest run_all_tests.py -v
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx
+
+      - name: Create test .env file
+        run: |
+          echo "DB_NAME=testdb" >> .env
+          echo "DB_USER=testuser" >> .env
+          echo "DB_PASSWORD=testpass" >> .env
+          echo "DB_HOST=localhost" >> .env
+          echo "DB_PORT=5432" >> .env
+          echo "INFLUX_URL=http://localhost:8086" >> .env
+          echo "INFLUX_TOKEN=test-token" >> .env
+          echo "INFLUX_ORG=test-org" >> .env
+          echo "INFLUX_BUCKET=test-bucket" >> .env
+          echo "SECRET_KEY=test-secret-key" >> .env
+          echo "SSH_TUNNEL_ENABLED=false" >> .env
+
+      - name: Run tests
+        run: |
+          python -m pytest run_all_tests.py -v
 
   deploy:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Deploy to EC2
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_PRIVATE_KEY }}
-        script: |
-          cd /home/deploy/API-VOLTIO
-          git pull origin ${{ github.ref_name }}
-          source venv/bin/activate
-          pip install -r requirements.txt
-          
-          # Ejecutar migraciones si es necesario
-          python -c "from src.core.db import engine, Base; Base.metadata.create_all(bind=engine)"
-          
-          # Reiniciar la aplicación
-          sudo supervisorctl restart voltio-api
-          
-          # Verificar que el servicio esté corriendo
-          sleep 5
-          sudo supervisorctl status voltio-api
-          
-          # Verificar que la API responda
-          curl -f http://localhost:8000/ || exit 1
+      - uses: actions/checkout@v3
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            cd /home/deploy/API-VOLTIO
+            git pull origin ${{ github.ref_name }}
+            source venv/bin/activate
+            pip install -r requirements.txt
+
+            # Ejecutar migraciones si es necesario
+            python -c "from src.core.db import engine, Base; Base.metadata.create_all(bind=engine)"
+
+            # Reiniciar la aplicación
+            sudo supervisorctl restart voltio-api
+
+            # Verificar que el servicio esté corriendo
+            sleep 5
+            sudo supervisorctl status voltio-api
+
+            # Verificar que la API responda
+            curl -f http://localhost:8000/ || exit 1
 ```
 
 ---
@@ -386,14 +408,17 @@ jobs:
 ### 1. En GitHub (Settings > Secrets and variables > Actions)
 
 **Secrets necesarios:**
+
 - `EC2_HOST`: IP elástica de tu instancia EC2
 - `EC2_USER`: `deploy` (o usuario que configuraste)
 - `EC2_PRIVATE_KEY`: Contenido completo de tu archivo `.pem`
 
 **Variables de entorno (si necesario):**
+
 - `ENVIRONMENT`: `production`
 
 ### 2. Crear script de configuración de secretos
+
 Crear `scripts/setup-secrets.sh`:
 
 ```bash
@@ -421,6 +446,7 @@ echo "Actualiza tu archivo .env con esta clave"
 ## 📊 Monitoreo y mantenimiento
 
 ### 1. Scripts de monitoreo
+
 Crear `scripts/health-check.sh`:
 
 ```bash
@@ -450,6 +476,7 @@ echo "=== Fin Health Check ==="
 ```
 
 ### 2. Configurar monitoreo automático
+
 ```bash
 # Agregar al crontab
 crontab -e
@@ -459,6 +486,7 @@ crontab -e
 ```
 
 ### 3. Logs importantes
+
 ```bash
 # Logs de la aplicación
 tail -f /var/log/voltio-api.log
@@ -477,6 +505,7 @@ sudo journalctl -u supervisor -f
 ## 🔧 Comandos útiles
 
 ### Gestión de la aplicación
+
 ```bash
 # Reiniciar aplicación
 sudo supervisorctl restart voltio-api
@@ -493,6 +522,7 @@ sudo netstat -tlnp | grep :80
 ```
 
 ### Actualización manual
+
 ```bash
 cd /home/deploy/API-VOLTIO
 git pull origin main
@@ -502,6 +532,7 @@ sudo supervisorctl restart voltio-api
 ```
 
 ### Backup de base de datos
+
 ```bash
 # PostgreSQL
 pg_dump -h localhost -U voltio_user voltio_db > backup_$(date +%Y%m%d).sql
@@ -515,6 +546,7 @@ psql -h localhost -U voltio_user voltio_db < backup_20240101.sql
 ## 🚨 Solución de problemas comunes
 
 ### 1. API no responde
+
 ```bash
 # Verificar proceso
 sudo supervisorctl status voltio-api
@@ -527,6 +559,7 @@ sudo supervisorctl restart voltio-api
 ```
 
 ### 2. Error de base de datos
+
 ```bash
 # Verificar conexión a BD
 python3 -c "from src.core.db import engine; print(engine.execute('SELECT 1').scalar())"
@@ -536,6 +569,7 @@ python3 -c "from src.core.config import settings; print('Config loaded successfu
 ```
 
 ### 3. Error de SSL
+
 ```bash
 # Renovar certificado
 sudo certbot renew
@@ -549,6 +583,7 @@ sudo nginx -t
 ## ✅ Checklist de despliegue
 
 ### Configuración inicial
+
 - [ ] Instancia EC2 configurada
 - [ ] Elastic IP asignada
 - [ ] Security Groups configurados
@@ -556,12 +591,14 @@ sudo nginx -t
 - [ ] Dependencias del sistema instaladas
 
 ### Base de datos
+
 - [ ] PostgreSQL configurado (local o RDS)
 - [ ] InfluxDB configurado
 - [ ] Variables de entorno configuradas
 - [ ] Conexiones probadas
 
 ### Aplicación
+
 - [ ] Repositorio clonado
 - [ ] Entorno virtual creado
 - [ ] Dependencias instaladas
@@ -569,17 +606,20 @@ sudo nginx -t
 - [ ] API funcionando en puerto 8000
 
 ### Servicios del sistema
+
 - [ ] Supervisor configurado
 - [ ] Nginx configurado
 - [ ] SSL configurado (opcional)
 - [ ] Firewall configurado
 
 ### GitHub Actions
+
 - [ ] Workflow creado
 - [ ] Secrets configurados en GitHub
 - [ ] Deploy automático probado
 
 ### Monitoreo
+
 - [ ] Scripts de health check
 - [ ] Logs configurados
 - [ ] Monitoreo automático (opcional)

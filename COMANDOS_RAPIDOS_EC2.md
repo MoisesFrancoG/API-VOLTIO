@@ -111,6 +111,17 @@ python3 -c "from src.core.db import engine; print(engine.execute('SELECT 1').sca
 # Verificar puertos
 sudo netstat -tlnp | grep :8000
 sudo netstat -tlnp | grep :80
+
+# Problemas con InfluxDB/Lecturas PZEM
+# Si ves errores de validación Pydantic, verifica logs:
+sudo supervisorctl tail -f voltio-api | grep -E "(ValidationError|deviceId)"
+
+# Problemas con endpoints duplicados
+# Verificar warnings en logs de FastAPI:
+sudo supervisorctl tail -f voltio-api | grep -E "(Duplicate Operation ID|UserWarning)"
+
+# Verificar dependencias de bcrypt
+pip list | grep -E "(bcrypt|passlib)"
 ```
 
 ## 📝 Variables de entorno importantes
@@ -121,7 +132,7 @@ nano .env
 
 # Variables críticas:
 # DB_NAME=voltio_db
-# DB_USER=voltio_user  
+# DB_USER=voltio_user
 # DB_PASSWORD=tu_password_seguro
 # SECRET_KEY=clave_super_secreta_32_caracteres
 # ENVIRONMENT=production
