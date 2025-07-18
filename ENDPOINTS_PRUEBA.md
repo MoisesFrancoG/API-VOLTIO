@@ -1,15 +1,18 @@
-# 🧪 Endpoints de Prueba para Verificar Despliegues
+# 🧪 Endpoints de Prueba para Verificar Despliegues - v1.2.0
 
 ## 📋 Tabla de Contenidos
 
 1. [Endpoints Disponibles](#endpoints-disponibles)
-2. [Cómo usar los endpoints](#cómo-usar-los-endpoints)
-3. [Ejemplos de respuestas](#ejemplos-de-respuestas)
-4. [Verificación de despliegues](#verificación-de-despliegues)
+2. [Nuevos Endpoints v1.2.0](#nuevos-endpoints-v120)
+3. [Cómo usar los endpoints](#cómo-usar-los-endpoints)
+4. [Ejemplos de respuestas](#ejemplos-de-respuestas)
+5. [Verificación de despliegues](#verificación-de-despliegues)
 
 ---
 
 ## 🎯 Endpoints Disponibles
+
+### Endpoints Básicos (v1.0)
 
 ### 1. **GET `/test/quick`** - Verificación Rápida
 
@@ -28,6 +31,71 @@
 - **Propósito**: Información detallada sobre el estado del despliegue
 - **Uso**: Verificar que todos los módulos y configuraciones están funcionando
 - **Incluye**: Versión, módulos, configuración, sistema
+
+---
+
+## 🆕 Nuevos Endpoints v1.2.0
+
+### 4. **GET `/test/deployment-v2`** - Despliegue v2 (NUEVO)
+
+- **Propósito**: Validar los últimos cambios y configuración del usuario deploy
+- **Uso**: Verificar que el nuevo sistema de despliegue funciona correctamente
+- **Incluye**: 
+  - Contexto del usuario (deploy/ubuntu)
+  - Información de Git
+  - Características del nuevo despliegue
+  - Directorio de trabajo actual
+
+### 5. **GET `/test/system-info`** - Información Detallada del Sistema (NUEVO)
+
+- **Propósito**: Diagnosticar la configuración del servidor en detalle
+- **Uso**: Obtener información completa del entorno de ejecución
+- **Incluye**:
+  - Información del servidor (hostname, platform)
+  - Proceso actual (PID, memoria, CPU)
+  - Directorios y archivos importantes
+  - Estado del entorno virtual
+  - Información de red
+
+### 6. **GET `/test/database-check`** - Verificación de Bases de Datos (NUEVO)
+
+- **Propósito**: Comprobar conectividad con PostgreSQL e InfluxDB
+- **Uso**: Validar que las conexiones a BD funcionan
+- **Incluye**:
+  - Estado de conexión PostgreSQL
+  - Estado de conexión InfluxDB
+  - Versiones de las bases de datos
+  - Mensajes de error detallados
+
+### 7. **GET `/test/environment-vars`** - Variables de Entorno (NUEVO)
+
+- **Propósito**: Verificar configuración sin exponer secretos
+- **Uso**: Comprobar que todas las variables críticas están configuradas
+- **Incluye**:
+  - Estado de variables críticas
+  - Longitud de valores (sin mostrar contenido)
+  - Resumen de configuración
+  - Variables faltantes
+
+### 8. **GET `/test/api-performance`** - Test de Rendimiento (NUEVO)
+
+- **Propósito**: Medir rendimiento básico de la API
+- **Uso**: Verificar que el servidor responde con buen rendimiento
+- **Incluye**:
+  - Tiempo de procesamiento
+  - Items procesados por segundo
+  - Carga del servidor (CPU, memoria)
+  - Estado de rendimiento
+
+### 9. **GET `/test/all-endpoints`** - Resumen de Todos los Tests (NUEVO)
+
+- **Propósito**: Listar todos los endpoints de prueba disponibles
+- **Uso**: Obtener una vista general de todas las pruebas
+- **Incluye**:
+  - Lista completa de endpoints
+  - Descripción de cada uno
+  - Resumen de características
+  - Instrucciones de uso
 
 ### 4. **GET `/`** - Endpoint Principal
 
