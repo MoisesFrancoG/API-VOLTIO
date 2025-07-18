@@ -3,14 +3,49 @@
 
 echo "🔧 Solucionando problemas de despliegue..."
 
-# Ir al directorio del proyecto
-cd /home/deploy/API-VOLTIO || exit 1
+# Verificar usuario actual y cambiar si es necesario
+echo "👤 Usuario actual: $(whoami)"
+echo "📁 Directorio actual: $(pwd)"
+
+# Si estamos como ubuntu, cambiar a deploy
+if [ "$(whoami)" = "ubuntu" ]; then
+    echo "🔄 Cambiando al usuario deploy..."
+    sudo -u deploy -i bash << 'DEPLOY_SCRIPT'
+    
+    echo "👤 Ahora como usuario: $(whoami)"
+    echo "📁 Directorio actual: $(pwd)"
+    
+    # Ir al directorio del proyecto
+    cd /home/deploy/API-VOLTIO || {
+        echo "❌ No se puede acceder a /home/deploy/API-VOLTIO"
+        echo "🔍 Buscando directorio del proyecto..."
+        find /home -name "API-VOLTIO" -type d 2>/dev/null || echo "No se encontró API-VOLTIO en /home"
+        exit 1
+    }
+else
+    # Si ya somos deploy o otro usuario, intentar ir al directorio
+    cd /home/deploy/API-VOLTIO || cd /home/ubuntu/API-VOLTIO || {
+        echo "❌ No se puede encontrar el directorio del proyecto"
+        echo "🔍 Buscando directorios posibles..."
+        find /home -name "API-VOLTIO" -type d 2>/dev/null || echo "No se encontró API-VOLTIO"
+        exit 1
+    }
+fi
 
 echo "📁 Directorio actual: $(pwd)"
 
 # Verificar estado de git
 echo "📋 Estado de Git:"
 git status
+
+# Resto del script para el usuario deploy...
+# (continuará con el resto de las operaciones)
+
+DEPLOY_SCRIPT
+    exit 0
+fi
+
+# Si llegamos aquí, ya estamos en el directorio correcto
 
 # Solución 1: Stash o commit cambios locales
 echo "💾 Guardando cambios locales..."
