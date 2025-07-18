@@ -14,7 +14,7 @@ class TimeRange(str, Enum):
 # Esquema para la respuesta de un único punto de datos
 class LecturaPZEMResponse(BaseModel):
     time: datetime = Field(..., alias="_time")
-    deviceId: str | None = None  # Hacer opcional
+    deviceId: str
     mac: str
     voltage: float | None = None
     current: float | None = None
