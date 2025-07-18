@@ -29,7 +29,7 @@ python-jose[cryptography]==3.3.0
 bcrypt==4.2.0
 
 # Additional dependencies for architecture
-pydantic-settings==2.8.2
+pydantic-settings==2.3.4
 
 # SSH Tunnel management
 psutil==6.1.0

@@ -64,7 +64,7 @@ python-multipart==0.0.17
 email-validator==2.2.0
 python-jose[cryptography]==3.3.0
 bcrypt==4.2.0
-pydantic-settings==2.8.2
+pydantic-settings==2.3.4
 psutil==6.1.0
 EOF
     
