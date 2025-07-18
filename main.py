@@ -84,3 +84,129 @@ def debug_config():
             }
 
     return config_info
+
+
+@app.get('/debug/token')
+def get_debug_token(user_email: str = "admin@voltio.com"):
+    """Endpoint para obtener un token JWT para pruebas (solo en desarrollo)"""
+    if settings.environment != "development":
+        return {"error": "Este endpoint solo está disponible en modo desarrollo"}
+
+    try:
+        # Importar las dependencias necesarias
+        from src.Usuarios.infrastructure.database import get_usuario_use_cases
+        from src.core.db import get_database
+        from sqlalchemy.orm import Session
+
+        # Obtener una sesión de base de datos
+        db_gen = get_database()
+        db = next(db_gen)
+
+        try:
+            # Obtener el caso de uso de usuarios
+            usuario_use_cases = get_usuario_use_cases(db)
+
+            # Buscar el usuario por email
+            from sqlalchemy import text
+            with db.bind.connect() as conn:
+                result = conn.execute(text("""
+                    SELECT id_usuario, nombre_usuario, correo, id_rol 
+                    FROM usuarios 
+                    WHERE correo = :email
+                """), {"email": user_email})
+                
+                user_data = result.fetchone()
+                
+                if not user_data:
+                    return {
+                        "error": f"Usuario con email '{user_email}' no encontrado",
+                        "available_users": "Usa /debug/users para ver usuarios disponibles"
+                    }
+
+                # Crear el token JWT manualmente
+                from datetime import datetime, timedelta
+                from jose import jwt
+                
+                # Datos del payload
+                payload_data = {
+                    "sub": str(user_data[0]),  # id_usuario
+                    "email": user_data[2],     # correo
+                    "exp": datetime.utcnow() + timedelta(minutes=settings.access_token_expire_minutes)
+                }
+                
+                # Generar el token
+                access_token = jwt.encode(
+                    payload_data, 
+                    settings.secret_key, 
+                    algorithm="HS256"
+                )
+
+                return {
+                    "access_token": access_token,
+                    "token_type": "bearer",
+                    "expires_in": settings.access_token_expire_minutes * 60,
+                    "user_info": {
+                        "id": user_data[0],
+                        "nombre": user_data[1],
+                        "email": user_data[2],
+                        "rol_id": user_data[3]
+                    },
+                    "usage": f"Authorization: Bearer {access_token}",
+                    "note": "Este token es solo para desarrollo y pruebas"
+                }
+
+        finally:
+            db.close()
+
+    except Exception as e:
+        return {
+            "error": f"Error al generar token: {str(e)}",
+            "suggestion": "Asegúrate de que la base de datos esté disponible y el usuario exista"
+        }
+
+
+@app.get('/debug/users')
+def get_debug_users():
+    """Endpoint para listar usuarios disponibles para debug (solo en desarrollo)"""
+    if settings.environment != "development":
+        return {"error": "Este endpoint solo está disponible en modo desarrollo"}
+
+    try:
+        from src.core.db import get_database
+        from sqlalchemy import text
+
+        # Obtener una sesión de base de datos
+        db_gen = get_database()
+        db = next(db_gen)
+
+        try:
+            with db.bind.connect() as conn:
+                result = conn.execute(text("""
+                    SELECT u.id_usuario, u.nombre_usuario, u.correo, r.nombre as rol_nombre
+                    FROM usuarios u
+                    LEFT JOIN roles r ON u.id_rol = r.id_rol
+                    ORDER BY u.id_usuario
+                """))
+                
+                users = []
+                for row in result:
+                    users.append({
+                        "id": row[0],
+                        "nombre": row[1], 
+                        "email": row[2],
+                        "rol": row[3]
+                    })
+
+                return {
+                    "users": users,
+                    "total": len(users),
+                    "usage": "Usa /debug/token?user_email=EMAIL para obtener token de cualquier usuario"
+                }
+
+        finally:
+            db.close()
+
+    except Exception as e:
+        return {
+            "error": f"Error al obtener usuarios: {str(e)}"
+        }
