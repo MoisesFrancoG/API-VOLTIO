@@ -93,7 +93,7 @@ def debug_config():
 @app.get('/test/deployment')
 def test_deployment():
     """Endpoint de prueba para verificar que los cambios se reflejan en el despliegue"""
-    
+
     # Información básica del sistema
     deployment_info = {
         "status": "✅ API funcionando correctamente",
@@ -123,7 +123,7 @@ def test_deployment():
         },
         "modules_status": {
             "usuarios": "✅ Disponible",
-            "roles": "✅ Disponible", 
+            "roles": "✅ Disponible",
             "ubicaciones": "✅ Disponible",
             "tipo_sensores": "✅ Disponible",
             "sensores": "✅ Disponible",
@@ -152,7 +152,7 @@ def test_deployment():
             "GET /api/v1/lecturas-pzem/"
         ]
     }
-    
+
     return deployment_info
 
 

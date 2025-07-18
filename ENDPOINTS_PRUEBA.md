@@ -12,21 +12,25 @@
 ## 🎯 Endpoints Disponibles
 
 ### 1. **GET `/test/quick`** - Verificación Rápida
+
 - **Propósito**: Endpoint ultra simple para verificaciones rápidas
 - **Uso**: Comprobar que la API responde básicamente
 - **Tiempo de respuesta**: < 50ms
 
 ### 2. **GET `/test/health`** - Health Check
+
 - **Propósito**: Health check estándar para monitoreo
 - **Uso**: Verificar el estado de salud de la aplicación
 - **Ideal para**: Load balancers, monitoreo automático
 
 ### 3. **GET `/test/deployment`** - Información Completa de Despliegue
+
 - **Propósito**: Información detallada sobre el estado del despliegue
 - **Uso**: Verificar que todos los módulos y configuraciones están funcionando
 - **Incluye**: Versión, módulos, configuración, sistema
 
 ### 4. **GET `/`** - Endpoint Principal
+
 - **Propósito**: Endpoint raíz de la API
 - **Uso**: Verificación básica de que la API está corriendo
 
@@ -35,6 +39,7 @@
 ## 🚀 Cómo usar los endpoints
 
 ### En desarrollo local:
+
 ```bash
 # Iniciar la API
 uvicorn main:app --host 0.0.0.0 --port 8000
@@ -46,6 +51,7 @@ curl http://localhost:8000/test/deployment
 ```
 
 ### En producción:
+
 ```bash
 # Reemplaza 'tu-dominio.com' con tu dominio o IP
 curl https://tu-dominio.com/test/quick
@@ -57,6 +63,7 @@ curl http://tu-ip-ec2:8000/test/quick
 ```
 
 ### Desde navegador:
+
 - `https://tu-dominio.com/test/quick`
 - `https://tu-dominio.com/test/health`
 - `https://tu-dominio.com/test/deployment`
@@ -66,6 +73,7 @@ curl http://tu-ip-ec2:8000/test/quick
 ## 📄 Ejemplos de respuestas
 
 ### `/test/quick`
+
 ```json
 {
   "ok": true,
@@ -75,6 +83,7 @@ curl http://tu-ip-ec2:8000/test/quick
 ```
 
 ### `/test/health`
+
 ```json
 {
   "status": "healthy",
@@ -86,6 +95,7 @@ curl http://tu-ip-ec2:8000/test/quick
 ```
 
 ### `/test/deployment` (resumido)
+
 ```json
 {
   "status": "✅ API funcionando correctamente",
@@ -114,6 +124,7 @@ curl http://tu-ip-ec2:8000/test/quick
 ## ✅ Verificación de despliegues
 
 ### 1. **Verificación inmediata después del despliegue:**
+
 ```bash
 # Verificar que responde
 curl -f https://tu-dominio.com/test/quick
@@ -122,6 +133,7 @@ curl -f https://tu-dominio.com/test/quick
 ```
 
 ### 2. **Verificación detallada:**
+
 ```bash
 # Obtener información completa
 curl https://tu-dominio.com/test/deployment | jq '.'
@@ -134,6 +146,7 @@ curl https://tu-dominio.com/test/deployment | jq '.modules_status'
 ```
 
 ### 3. **Script de verificación automática:**
+
 ```bash
 #!/bin/bash
 # verify-deployment.sh
@@ -161,6 +174,7 @@ echo "🎉 Verificación completada exitosamente!"
 ```
 
 ### 4. **Monitoreo continuo:**
+
 ```bash
 # Verificar cada 30 segundos
 watch -n 30 'curl -s https://tu-dominio.com/test/health | jq ".status"'
@@ -181,7 +195,7 @@ Los endpoints se prueban automáticamente en el workflow de GitHub Actions:
   run: |
     # Verificar que la API responda
     curl -f http://localhost:8000/ || exit 1
-    
+
     # Probar endpoints de test
     curl -f http://localhost:8000/test/quick || exit 1
     curl -f http://localhost:8000/test/health || exit 1
@@ -194,22 +208,25 @@ Los endpoints se prueban automáticamente en el workflow de GitHub Actions:
 ### Con herramientas de monitoreo:
 
 **Uptime Robot / Pingdom:**
+
 - URL: `https://tu-dominio.com/test/health`
 - Intervalo: 5 minutos
 - Palabra clave esperada: `"healthy"`
 
 **New Relic / DataDog:**
+
 - Endpoint: `/test/health`
 - Métrica: Tiempo de respuesta
 - Alerta: Si status != "healthy"
 
 **Prometheus + Grafana:**
+
 ```yaml
 # prometheus.yml
-- job_name: 'voltio-api'
+- job_name: "voltio-api"
   static_configs:
-    - targets: ['tu-dominio.com:443']
-  metrics_path: '/test/health'
+    - targets: ["tu-dominio.com:443"]
+  metrics_path: "/test/health"
 ```
 
 ---
@@ -219,16 +236,19 @@ Los endpoints se prueban automáticamente en el workflow de GitHub Actions:
 ### Si los endpoints no responden:
 
 1. **Verificar que la aplicación está corriendo:**
+
    ```bash
    sudo supervisorctl status voltio-api
    ```
 
 2. **Verificar logs:**
+
    ```bash
    sudo supervisorctl tail -f voltio-api
    ```
 
 3. **Verificar puerto:**
+
    ```bash
    sudo netstat -tlnp | grep :8000
    ```
@@ -239,6 +259,7 @@ Los endpoints se prueban automáticamente en el workflow de GitHub Actions:
    ```
 
 ### Códigos de respuesta esperados:
+
 - ✅ **200**: Todo funcionando correctamente
 - ❌ **500**: Error interno del servidor
 - ❌ **404**: Endpoint no encontrado (verificar despliegue)

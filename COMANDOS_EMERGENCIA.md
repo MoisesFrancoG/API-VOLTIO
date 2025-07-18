@@ -3,11 +3,13 @@
 ## 🚨 Si el despliegue falla
 
 ### 1. Conectar al servidor
+
 ```bash
 ssh -i "voltioBD.pem" ubuntu@voltio_api.acstree.xyz
 ```
 
 ### 2. Ejecutar script de solución automática
+
 ```bash
 # Cambiar a usuario deploy
 sudo su - deploy

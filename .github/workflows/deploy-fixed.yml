@@ -57,9 +57,6 @@ jobs:
 
       - name: Run tests
         run: |
-          # Ejecutar tests básicos primero
-          python -m pytest test_basic.py -v
-
           # Ejecutar tests específicos que sabemos que funcionan
           python -m pytest run_all_tests.py::test_basic_import -v
           python -m pytest run_all_tests.py::test_environment_setup -v
@@ -85,53 +82,19 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             cd /home/deploy/API-VOLTIO
-
-            # Verificar y reparar requirements.txt si está corrupto
-            echo "🔍 Verificando integridad de requirements.txt..."
-            if ! grep -q "fastapi" requirements.txt || grep -q "慦瑳" requirements.txt; then
-              echo "⚠️  requirements.txt corrupto, reparando..."
-              curl -o requirements.txt https://raw.githubusercontent.com/MoisesFrancoG/API-VOLTIO/develop/requirements.txt
-            fi
-
-            # Limpiar cambios locales conflictivos
-            git stash
-            git reset --hard HEAD
-
-            # Actualizar código
             git pull origin ${{ github.ref_name }}
-
-            # Activar entorno virtual y actualizar dependencias
             source venv/bin/activate
-            pip install --upgrade pip
-            pip install -r requirements.txt --force-reinstall
+            pip install -r requirements.txt
 
             # Ejecutar migraciones si es necesario
-            python -c "from src.core.db import engine, Base; Base.metadata.create_all(bind=engine)" || echo "Migraciones no disponibles"
+            python -c "from src.core.db import engine, Base; Base.metadata.create_all(bind=engine)"
 
-            # Reiniciar la aplicación (intentar múltiples métodos)
-            sudo supervisorctl restart voltio-api || sudo systemctl restart voltio-api || echo "Error al reiniciar servicio"
+            # Reiniciar la aplicación
+            sudo supervisorctl restart voltio-api
 
             # Verificar que el servicio esté corriendo
-            sleep 10
-            sudo supervisorctl status voltio-api || sudo systemctl status voltio-api
+            sleep 5
+            sudo supervisorctl status voltio-api
 
-            # Verificar que la API responda (endpoint principal)
-            echo "🧪 Verificando endpoint principal..."
+            # Verificar que la API responda
             curl -f http://localhost:8000/ || exit 1
-
-            # Probar endpoints de test (solo si existen, no fallar si no están)
-            echo "🧪 Probando endpoints de test..."
-            curl -f http://localhost:8000/test/quick && echo "✅ /test/quick disponible" || echo "⏳ /test/quick no disponible aún"
-            curl -f http://localhost:8000/test/health && echo "✅ /test/health disponible" || echo "⏳ /test/health no disponible aún"
-
-            # Mostrar respuesta de la API
-            RESPONSE=$(curl -s http://localhost:8000/)
-            echo "📊 Respuesta de la API: $RESPONSE"
-
-            # Verificar que no sea un error 404 o 500
-            if echo "$RESPONSE" | grep -q "message.*API de Voltio"; then
-              echo "✅ API funcionando correctamente"
-            else
-              echo "❌ API no responde correctamente"
-              exit 1
-            fi

@@ -9,24 +9,26 @@ from pathlib import Path
 def test_project_structure():
     """Verificar que la estructura del proyecto es correcta"""
     project_root = Path(__file__).parent
-    
+
     # Verificar archivos principales
     assert (project_root / "main.py").exists(), "main.py debe existir"
-    assert (project_root / "requirements.txt").exists(), "requirements.txt debe existir"
+    assert (project_root /
+            "requirements.txt").exists(), "requirements.txt debe existir"
     assert (project_root / "src").exists(), "directorio src debe existir"
-    
+
     # Verificar módulos principales
     src_dir = project_root / "src"
     expected_modules = [
-        "core", "Usuarios", "Roles", "Ubicaciones", 
-        "TipoSensores", "Sensores", "Lecturas", 
+        "core", "Usuarios", "Roles", "Ubicaciones",
+        "TipoSensores", "Sensores", "Lecturas",
         "ComandosIR", "Alertas"
     ]
-    
+
     for module in expected_modules:
         module_path = src_dir / module
         if module_path.exists():
-            assert (module_path / "__init__.py").exists(), f"__init__.py debe existir en {module}"
+            assert (
+                module_path / "__init__.py").exists(), f"__init__.py debe existir en {module}"
 
 
 def test_environment_variables():
