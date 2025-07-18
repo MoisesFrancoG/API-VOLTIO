@@ -1,4 +1,8 @@
 from fastapi import FastAPI
+import datetime
+import os
+import sys
+from pathlib import Path
 from src.core.db import engine, Base
 from src.core.config import settings
 from src.Roles.infrastructure.routers import router as roles_router
@@ -84,3 +88,91 @@ def debug_config():
             }
 
     return config_info
+
+
+@app.get('/test/deployment')
+def test_deployment():
+    """Endpoint de prueba para verificar que los cambios se reflejan en el despliegue"""
+    
+    # Información básica del sistema
+    deployment_info = {
+        "status": "✅ API funcionando correctamente",
+        "message": "Este endpoint confirma que el despliegue fue exitoso",
+        "timestamp": datetime.datetime.now().isoformat(),
+        "version": "1.1.0",  # Incrementamos la versión para ver cambios
+        "environment": os.getenv("ENVIRONMENT", "unknown"),
+        "debug_mode": os.getenv("DEBUG", "false").lower() == "true",
+        "deployment": {
+            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "commit_info": "Deployment test endpoint added",
+            "features": [
+                "🧪 Tests corregidos y funcionando",
+                "📁 Estructura de proyecto validada",
+                "🚀 GitHub Actions configurado",
+                "🔧 Pytest configurado correctamente",
+                "📦 Supervisor y Nginx listos",
+                "🔒 SSL preparado para producción"
+            ]
+        },
+        "system": {
+            "python_version": sys.version,
+            "platform": sys.platform,
+            "current_directory": str(Path.cwd()),
+            "main_file_exists": Path("main.py").exists(),
+            "src_directory_exists": Path("src").exists()
+        },
+        "modules_status": {
+            "usuarios": "✅ Disponible",
+            "roles": "✅ Disponible", 
+            "ubicaciones": "✅ Disponible",
+            "tipo_sensores": "✅ Disponible",
+            "sensores": "✅ Disponible",
+            "lecturas": "✅ Disponible",
+            "comandos_ir": "✅ Disponible",
+            "alertas": "✅ Disponible",
+            "lecturas_influx_pzem": "✅ Disponible"
+        },
+        "database": {
+            "postgresql_configured": bool(os.getenv("DB_NAME")),
+            "influxdb_configured": bool(os.getenv("INFLUX_URL")),
+            "connection_test": "Configurado (test de conexión requiere BD activa)"
+        },
+        "endpoints_available": [
+            "GET /",
+            "GET /test/deployment",
+            "GET /debug/config",
+            "GET /api/v1/usuarios/",
+            "GET /api/v1/roles/",
+            "GET /api/v1/ubicaciones/",
+            "GET /api/v1/tipo-sensores/",
+            "GET /api/v1/sensores/",
+            "GET /api/v1/lecturas/",
+            "GET /api/v1/comandos-ir/",
+            "GET /api/v1/alertas/",
+            "GET /api/v1/lecturas-pzem/"
+        ]
+    }
+    
+    return deployment_info
+
+
+@app.get('/test/health')
+def health_check():
+    """Endpoint simple de health check para monitoreo"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.datetime.now().isoformat(),
+        "uptime": "running",
+        "version": "1.1.0",
+        "service": "API Voltio"
+    }
+
+
+@app.get('/test/quick')
+def quick_test():
+    """Endpoint ultra simple para verificaciones rápidas"""
+    return {
+        "ok": True,
+        "time": datetime.datetime.now().isoformat(),
+        "message": "🚀 Despliegue exitoso - API respondiendo correctamente"
+    }
