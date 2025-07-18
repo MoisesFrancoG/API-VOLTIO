@@ -1,6 +1,38 @@
 # Guía Rápida de Comandos para EC2
 
-## 🚀 Setup inicial rápido
+## 🚀 Setup inicial r## 📊 Comandos de monitoreo
+
+```bash
+# Verificar estado de servicios
+sudo supervisorctl status
+sudo systemctl status nginx
+sudo systemctl status postgresql
+
+# Ver logs
+sudo supervisorctl tail -f voltio-api
+sudo tail -f /var/log/nginx/voltio-api.access.log
+sudo tail -f /var/log/nginx/voltio-api.error.log
+
+# Health check
+./scripts/health-check.sh
+```
+
+## 🔄 Comandos de actualización
+
+```bash
+# Actualizar código
+cd /home/deploy/API-VOLTIO
+git pull origin main
+
+# Reinstalar dependencias
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Reiniciar aplicación
+sudo supervisorctl restart voltio-api
+```
+
+## 🐛 Solución de problemas comunespido
 
 ```bash
 # 1. Conectar a EC2
@@ -44,6 +76,12 @@ sudo nginx -t && sudo systemctl restart nginx
 # Instalar certbot (si no está instalado)
 sudo apt install certbot python3-certbot-nginx
 
+# Verificar configuración de Nginx antes de SSL
+sudo nginx -t
+
+# Si hay error en gzip_proxied, actualizar configuración:
+sudo cp configs/nginx.conf /etc/nginx/sites-available/voltio-api
+
 # Obtener certificado SSL
 sudo certbot --nginx -d tu-dominio.com
 
@@ -51,41 +89,17 @@ sudo certbot --nginx -d tu-dominio.com
 sudo certbot renew --dry-run
 ```
 
-## 📊 Comandos de monitoreo
+## � Solución de problemas comunes
 
 ```bash
-# Verificar estado de servicios
-sudo supervisorctl status
-sudo systemctl status nginx
-sudo systemctl status postgresql
+# Error de configuración Nginx
+sudo nginx -t  # Verificar sintaxis
+sudo cp configs/nginx.conf /etc/nginx/sites-available/voltio-api  # Reemplazar config
+sudo systemctl restart nginx
 
-# Ver logs
-sudo supervisorctl tail -f voltio-api
-sudo tail -f /var/log/nginx/voltio-api.access.log
-sudo tail -f /var/log/nginx/voltio-api.error.log
+# Si certbot falla por configuración Nginx
+sudo nginx -t && sudo certbot --nginx -d tu-dominio.com
 
-# Health check
-./scripts/health-check.sh
-```
-
-## 🔄 Comandos de actualización
-
-```bash
-# Actualizar código
-cd /home/deploy/API-VOLTIO
-git pull origin main
-
-# Reinstalar dependencias
-source venv/bin/activate
-pip install -r requirements.txt
-
-# Reiniciar aplicación
-sudo supervisorctl restart voltio-api
-```
-
-## 🐛 Solución de problemas
-
-```bash
 # Si la API no responde
 sudo supervisorctl restart voltio-api
 sudo supervisorctl status voltio-api
