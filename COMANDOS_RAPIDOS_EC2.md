@@ -124,6 +124,24 @@ sudo supervisorctl tail -f voltio-api | grep -E "(Duplicate Operation ID|UserWar
 pip list | grep -E "(bcrypt|passlib)"
 ```
 
+## 🧪 Ejecutar tests
+
+```bash
+# Tests básicos con pytest
+python -m pytest run_all_tests.py::test_basic_import -v
+python -m pytest run_all_tests.py::test_environment_setup -v
+
+# Ejecutar todos los tests disponibles
+python -m pytest run_all_tests.py -v
+
+# Ejecutar tests específicos (si existen)
+python -m pytest test_simple.py -v
+python -m pytest test_lecturas_simple.py -v
+
+# Ejecutar suite completa (modo interactivo)
+python run_all_tests.py
+```
+
 ## 📝 Variables de entorno importantes
 
 ```bash
