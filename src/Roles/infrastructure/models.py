@@ -1,5 +1,5 @@
 """
-Modelos de base de datos para Rol (SQLAlchemy)
+Modelos de base de datos para Role (SQLAlchemy)
 """
 
 from sqlalchemy import Column, Integer, String
@@ -7,15 +7,15 @@ from sqlalchemy.orm import relationship
 from src.core.db import Base
 
 
-class RolModel(Base):
+class RoleModel(Base):
     __tablename__ = "roles"
 
-    id_rol = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    nombre = Column(String(50), nullable=False, unique=True, index=True)
-    descripcion = Column(String(255), nullable=False)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    name = Column(String(50), nullable=False, unique=True, index=True)
+    description = Column(String(255), nullable=True)
 
-    # Relación con la tabla usuarios
-    usuarios = relationship("UsuarioModel", back_populates="rol")
+    # Relación con la tabla users
+    users = relationship("UserModel", back_populates="role")
 
     def __repr__(self):
-        return f"<RolModel(id_rol={self.id_rol}, nombre='{self.nombre}')>"
+        return f"<RoleModel(id={self.id}, name='{self.name}')>"

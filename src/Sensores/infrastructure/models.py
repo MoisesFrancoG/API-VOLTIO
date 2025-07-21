@@ -1,31 +1,44 @@
 """
-Modelos SQLAlchemy para el módulo de Sensores
+SQLAlchemy models for the Devices module
 """
 
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Text, DateTime
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from ...core.db import Base
 
-class SensorModel(Base):
-    """Modelo SQLAlchemy para Sensor"""
-    
-    __tablename__ = "sensores"
-    
-    id_sensor = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    nombre = Column(String(100), nullable=False, unique=True, index=True)
-    id_tipo_sensor = Column(Integer, nullable=False, index=True)  # FK a tipo_sensores
-    id_ubicacion = Column(Integer, nullable=False, index=True)    # FK a ubicaciones
-    id_usuario = Column(Integer, nullable=False, index=True)      # FK a usuarios
-    activo = Column(Boolean, default=True, nullable=False, index=True)
-    
-    # Relaciones con otros modelos (cuando estén disponibles)
-    # tipo_sensor = relationship("TipoSensorModel", back_populates="sensores")
-    # ubicacion = relationship("UbicacionModel", back_populates="sensores")
-    # usuario = relationship("UsuarioModel", back_populates="sensores")
-    # lecturas = relationship("LecturaModel", back_populates="sensor")
-    # comandos_ir = relationship("ComandoIRModel", back_populates="sensor")
-    
+
+class DeviceModel(Base):
+    """SQLAlchemy model for Device"""
+
+    __tablename__ = "devices"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    # Puede ser nullable según BD
+    name = Column(String(100), nullable=True, index=True)
+    device_type_id = Column(Integer, nullable=True,
+                            index=True)  # FK to device_types
+    location_id = Column(Integer, nullable=True,
+                         index=True)     # FK to locations
+    user_id = Column(Integer, nullable=True, index=True)         # FK to users
+    is_active = Column(Boolean, default=True, nullable=True, index=True)
+    mac_address = Column(String(17), nullable=False,
+                         index=True)  # Campo requerido en BD
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True),
+                        server_default=func.now(), nullable=True)
+
+    # Relationships with other models (when available)
+    # device_type = relationship("DeviceTypeModel", back_populates="devices")
+    # location = relationship("LocationModel", back_populates="devices")
+    # user = relationship("UserModel", back_populates="devices")
+    # readings = relationship("ReadingModel", back_populates="device")
+    # ir_commands = relationship("IRCommandModel", back_populates="device")
+
+    # Relación con notificaciones
+    notifications = relationship("NotificationModel", back_populates="device")
+
     def __repr__(self):
-        estado = "Activo" if self.activo else "Inactivo"
-        return f"<SensorModel(id_sensor={self.id_sensor}, nombre='{self.nombre}', tipo={self.id_tipo_sensor}, ubicacion={self.id_ubicacion}, usuario={self.id_usuario}, estado={estado})>"
+        status = "Active" if self.is_active else "Inactive"
+        return f"<DeviceModel(id={self.id}, name='{self.name}', type={self.device_type_id}, location={self.location_id}, user={self.user_id}, status={status})>"

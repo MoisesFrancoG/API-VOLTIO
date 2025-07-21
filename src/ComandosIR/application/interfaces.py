@@ -1,31 +1,31 @@
 from abc import ABC, abstractmethod
 from typing import List
-from src.ComandosIR.domain.schemas import ComandoIRCreate, ComandoIRUpdate, ComandoIRResponse
+from src.ComandosIR.domain.schemas import DeviceCommandCreate, DeviceCommandUpdate, DeviceCommandResponse
 
 
-class ComandoIRRepositoryInterface(ABC):
-    """Puerto que define qué operaciones debe implementar un repositorio"""
+class DeviceCommandRepositoryInterface(ABC):
+    """Port that defines what operations a repository must implement"""
 
     @abstractmethod
-    def get_all(self) -> List[ComandoIRResponse]:
+    def get_all(self) -> List[DeviceCommandResponse]:
         pass
 
     @abstractmethod
-    def get_by_id(self, id_comando: int) -> ComandoIRResponse:
+    def get_by_id(self, id: int) -> DeviceCommandResponse:
         pass
 
     @abstractmethod
-    def get_by_sensor(self, id_sensor: int) -> List[ComandoIRResponse]:
+    def get_by_device(self, device_id: int) -> List[DeviceCommandResponse]:
         pass
 
     @abstractmethod
-    def create(self, comando_ir: ComandoIRCreate) -> ComandoIRResponse:
+    def create(self, device_command: DeviceCommandCreate) -> DeviceCommandResponse:
         pass
 
     @abstractmethod
-    def update(self, id_comando: int, comando_ir: ComandoIRUpdate) -> ComandoIRResponse:
+    def update(self, id: int, device_command: DeviceCommandUpdate) -> DeviceCommandResponse:
         pass
 
     @abstractmethod
-    def delete(self, id_comando: int) -> None:
+    def delete(self, id: int) -> None:
         pass

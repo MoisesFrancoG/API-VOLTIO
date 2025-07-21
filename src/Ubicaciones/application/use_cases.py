@@ -1,25 +1,25 @@
 from typing import List
-from src.Ubicaciones.domain.schemas import UbicacionCreate, UbicacionUpdate, UbicacionResponse
-from src.Ubicaciones.application.interfaces import UbicacionRepositoryInterface
+from src.Ubicaciones.domain.schemas import LocationCreate, LocationUpdate, LocationResponse
+from src.Ubicaciones.application.interfaces import LocationRepositoryInterface
 
 
-class UbicacionUseCases:
-    """Casos de uso para la entidad Ubicacion"""
+class LocationUseCases:
+    """Casos de uso para la entidad Location"""
 
-    def __init__(self, repository: UbicacionRepositoryInterface):
+    def __init__(self, repository: LocationRepositoryInterface):
         self.repository = repository
 
-    def listar_ubicaciones(self) -> List[UbicacionResponse]:
+    def list_locations(self) -> List[LocationResponse]:
         return self.repository.get_all()
 
-    def obtener_ubicacion(self, id_ubicacion: int) -> UbicacionResponse:
-        return self.repository.get_by_id(id_ubicacion)
+    def get_location(self, location_id: int) -> LocationResponse:
+        return self.repository.get_by_id(location_id)
 
-    def crear_ubicacion(self, ubicacion: UbicacionCreate) -> UbicacionResponse:
-        return self.repository.create(ubicacion)
+    def create_location(self, location: LocationCreate) -> LocationResponse:
+        return self.repository.create(location)
 
-    def actualizar_ubicacion(self, id_ubicacion: int, ubicacion: UbicacionUpdate) -> UbicacionResponse:
-        return self.repository.update(id_ubicacion, ubicacion)
+    def update_location(self, location_id: int, location: LocationUpdate) -> LocationResponse:
+        return self.repository.update(location_id, location)
 
-    def eliminar_ubicacion(self, id_ubicacion: int) -> None:
-        self.repository.delete(id_ubicacion)
+    def delete_location(self, location_id: int) -> None:
+        self.repository.delete(location_id)

@@ -50,23 +50,23 @@ jobs:
           echo "INFLUX_TOKEN=test-token" >> .env
           echo "INFLUX_ORG=test-org" >> .env
           echo "INFLUX_BUCKET=test-bucket" >> .env
-          echo "SECRET_KEY=test-secret-key-that-is-at-least-32-characters-long" >> .env
+          echo "SECRET_KEY=test-secret-key-that-is-at-least-32-characters-long-for-jwt-encoding" >> .env
           echo "SSH_TUNNEL_ENABLED=false" >> .env
           echo "ENVIRONMENT=test" >> .env
           echo "DEBUG=true" >> .env
+          echo "RABBITMQ_URL=amqp://guest:guest@localhost:5672/" >> .env
 
       - name: Run tests
         run: |
           # Ejecutar tests básicos primero
-          python -m pytest test_basic.py -v
+          python test_basic.py
+          
+          # Ejecutar tests de configuración
+          python run_all_tests.py
 
-          # Ejecutar tests específicos que sabemos que funcionan
-          python -m pytest run_all_tests.py::test_basic_import -v
-          python -m pytest run_all_tests.py::test_environment_setup -v
-
-          # Si existen tests adicionales, ejecutarlos
+          # Tests específicos si están disponibles
           if [ -f "test_simple.py" ]; then
-            python -m pytest test_simple.py -v || echo "test_simple.py no disponible"
+            python test_simple.py || echo "⚠️ test_simple.py no disponible"
           fi
 
   deploy:

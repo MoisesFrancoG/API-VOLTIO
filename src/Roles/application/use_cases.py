@@ -1,25 +1,25 @@
 from typing import List
-from src.Roles.domain.schemas import RolCreate, RolUpdate, RolResponse
-from src.Roles.application.interfaces import RolRepositoryInterface
+from src.Roles.domain.schemas import RoleCreate, RoleUpdate, RoleResponse
+from src.Roles.application.interfaces import RoleRepositoryInterface
 
 
-class RolUseCases:
-    """Casos de uso para la entidad Rol"""
+class RoleUseCases:
+    """Casos de uso para la entidad Role"""
 
-    def __init__(self, repository: RolRepositoryInterface):
+    def __init__(self, repository: RoleRepositoryInterface):
         self.repository = repository
 
-    def listar_roles(self) -> List[RolResponse]:
+    def list_roles(self) -> List[RoleResponse]:
         return self.repository.get_all()
 
-    def obtener_rol(self, id_rol: int) -> RolResponse:
-        return self.repository.get_by_id(id_rol)
+    def get_role(self, role_id: int) -> RoleResponse:
+        return self.repository.get_by_id(role_id)
 
-    def crear_rol(self, rol: RolCreate) -> RolResponse:
-        return self.repository.create(rol)
+    def create_role(self, role: RoleCreate) -> RoleResponse:
+        return self.repository.create(role)
 
-    def actualizar_rol(self, id_rol: int, rol: RolUpdate) -> RolResponse:
-        return self.repository.update(id_rol, rol)
+    def update_role(self, role_id: int, role: RoleUpdate) -> RoleResponse:
+        return self.repository.update(role_id, role)
 
-    def eliminar_rol(self, id_rol: int) -> None:
-        self.repository.delete(id_rol)
+    def delete_role(self, role_id: int) -> None:
+        self.repository.delete(role_id)

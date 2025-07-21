@@ -1,326 +1,404 @@
 """
-Rutas FastAPI para el módulo de Sensores
+FastAPI routes for the Devices module
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from typing import List, Optional
+import logging
 
-from ..application.use_cases import SensorUseCases
-from ..domain.schemas import SensorCreate, SensorUpdate, SensorResponse, SensorEstadoUpdate
-from .database import get_sensor_use_cases
+from ..application.use_cases import DeviceUseCases
+from ..domain.schemas import (
+    DeviceCreate, DeviceUpdate, DeviceResponse, DeviceBase,
+    DeviceStatusUpdate, RelayCommandRequest, RelayCommandResponse
+)
+from src.core.auth_middleware import get_current_user
+from src.core.rabbitmq import publish_relay_command
+from src.Usuarios.domain.schemas import UserResponse
+from .database import get_device_use_cases
 
-router = APIRouter(prefix="/sensores", tags=["sensores"])
+logger = logging.getLogger(__name__)
+router = APIRouter(prefix="/devices", tags=["devices"])
 
-@router.post("/", response_model=SensorResponse)
-def crear_sensor(
-    sensor: SensorCreate,
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
+
+@router.post("/", response_model=DeviceResponse)
+def create_device(
+    device: DeviceCreate,
+    current_user: UserResponse = Depends(get_current_user),
+    use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
-    """Crear un nuevo sensor"""
+    """Create a new device for the authenticated user"""
     try:
-        sensor_creado = use_cases.crear_sensor(sensor)
-        return SensorResponse(
-            id_sensor=sensor_creado.id_sensor,
-            nombre=sensor_creado.nombre,
-            id_tipo_sensor=sensor_creado.id_tipo_sensor,
-            id_ubicacion=sensor_creado.id_ubicacion,
-            id_usuario=sensor_creado.id_usuario,
-            activo=sensor_creado.activo
+        # Crear un objeto similar a DeviceBase con todos los campos necesarios
+        class DeviceWithUser:
+            def __init__(self, device_create, user_id):
+                self.name = device_create.name
+                self.device_type_id = device_create.device_type_id
+                self.location_id = device_create.location_id
+                self.user_id = user_id  # ✅ Tomado automáticamente del token
+                self.is_active = device_create.is_active
+                self.mac_address = device_create.mac_address
+                self.description = device_create.description
+
+        device_with_user = DeviceWithUser(device, current_user.id)
+
+        created_device = use_cases.create_device(device_with_user)
+        return DeviceResponse(
+            id=created_device.id,
+            name=created_device.name,
+            device_type_id=created_device.device_type_id,
+            location_id=created_device.location_id,
+            user_id=created_device.user_id,
+            is_active=created_device.is_active,
+            mac_address=getattr(created_device, 'mac_address', None),
+            description=getattr(created_device, 'description', None),
+            created_at=getattr(created_device, 'created_at', None)
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Internal server error: {str(e)}")
 
-@router.get("/{id_sensor}", response_model=SensorResponse)
-def obtener_sensor(
-    id_sensor: int,
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
-):
-    """Obtener un sensor específico por ID"""
-    try:
-        sensor = use_cases.obtener_sensor(id_sensor)
-        if not sensor:
-            raise HTTPException(status_code=404, detail="Sensor no encontrado")
-        
-        return SensorResponse(
-            id_sensor=sensor.id_sensor,
-            nombre=sensor.nombre,
-            id_tipo_sensor=sensor.id_tipo_sensor,
-            id_ubicacion=sensor.id_ubicacion,
-            id_usuario=sensor.id_usuario,
-            activo=sensor.activo
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
-@router.get("/", response_model=List[SensorResponse])
-def obtener_todos_sensores(
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
+@router.get("/{device_id}", response_model=DeviceResponse)
+def get_device(
+    device_id: int,
+    use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
-    """Obtener todos los sensores"""
+    """Get a specific device by ID"""
     try:
-        sensores = use_cases.obtener_todos_sensores()
-        return [
-            SensorResponse(
-                id_sensor=sensor.id_sensor,
-                nombre=sensor.nombre,
-                id_tipo_sensor=sensor.id_tipo_sensor,
-                id_ubicacion=sensor.id_ubicacion,
-                id_usuario=sensor.id_usuario,
-                activo=sensor.activo
-            )
-            for sensor in sensores
-        ]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+        device = use_cases.get_device(device_id)
+        if not device:
+            raise HTTPException(status_code=404, detail="Device not found")
 
-@router.get("/activos/", response_model=List[SensorResponse])
-def obtener_sensores_activos(
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
-):
-    """Obtener solo los sensores activos"""
-    try:
-        sensores = use_cases.obtener_sensores_activos()
-        return [
-            SensorResponse(
-                id_sensor=sensor.id_sensor,
-                nombre=sensor.nombre,
-                id_tipo_sensor=sensor.id_tipo_sensor,
-                id_ubicacion=sensor.id_ubicacion,
-                id_usuario=sensor.id_usuario,
-                activo=sensor.activo
-            )
-            for sensor in sensores
-        ]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-@router.get("/tipo/{id_tipo_sensor}", response_model=List[SensorResponse])
-def obtener_sensores_por_tipo(
-    id_tipo_sensor: int,
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
-):
-    """Obtener sensores por tipo"""
-    try:
-        sensores = use_cases.obtener_sensores_por_tipo(id_tipo_sensor)
-        return [
-            SensorResponse(
-                id_sensor=sensor.id_sensor,
-                nombre=sensor.nombre,
-                id_tipo_sensor=sensor.id_tipo_sensor,
-                id_ubicacion=sensor.id_ubicacion,
-                id_usuario=sensor.id_usuario,
-                activo=sensor.activo
-            )
-            for sensor in sensores
-        ]
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-@router.get("/ubicacion/{id_ubicacion}", response_model=List[SensorResponse])
-def obtener_sensores_por_ubicacion(
-    id_ubicacion: int,
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
-):
-    """Obtener sensores por ubicación"""
-    try:
-        sensores = use_cases.obtener_sensores_por_ubicacion(id_ubicacion)
-        return [
-            SensorResponse(
-                id_sensor=sensor.id_sensor,
-                nombre=sensor.nombre,
-                id_tipo_sensor=sensor.id_tipo_sensor,
-                id_ubicacion=sensor.id_ubicacion,
-                id_usuario=sensor.id_usuario,
-                activo=sensor.activo
-            )
-            for sensor in sensores
-        ]
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-@router.get("/usuario/{id_usuario}", response_model=List[SensorResponse])
-def obtener_sensores_por_usuario(
-    id_usuario: int,
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
-):
-    """Obtener sensores por usuario"""
-    try:
-        sensores = use_cases.obtener_sensores_por_usuario(id_usuario)
-        return [
-            SensorResponse(
-                id_sensor=sensor.id_sensor,
-                nombre=sensor.nombre,
-                id_tipo_sensor=sensor.id_tipo_sensor,
-                id_ubicacion=sensor.id_ubicacion,
-                id_usuario=sensor.id_usuario,
-                activo=sensor.activo
-            )
-            for sensor in sensores
-        ]
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-@router.get("/buscar/", response_model=List[SensorResponse])
-def buscar_sensores_por_nombre(
-    nombre: str = Query(..., min_length=2, description="Término de búsqueda"),
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
-):
-    """Buscar sensores por nombre"""
-    try:
-        sensores = use_cases.buscar_sensores_por_nombre(nombre)
-        return [
-            SensorResponse(
-                id_sensor=sensor.id_sensor,
-                nombre=sensor.nombre,
-                id_tipo_sensor=sensor.id_tipo_sensor,
-                id_ubicacion=sensor.id_ubicacion,
-                id_usuario=sensor.id_usuario,
-                activo=sensor.activo
-            )
-            for sensor in sensores
-        ]
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-@router.get("/tipo/{id_tipo_sensor}/estadisticas")
-def obtener_estadisticas_por_tipo(
-    id_tipo_sensor: int,
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
-):
-    """Obtener estadísticas de sensores por tipo"""
-    try:
-        estadisticas = use_cases.obtener_estadisticas_por_tipo(id_tipo_sensor)
-        return estadisticas
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-@router.get("/ubicacion/{id_ubicacion}/estadisticas")
-def obtener_estadisticas_por_ubicacion(
-    id_ubicacion: int,
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
-):
-    """Obtener estadísticas de sensores por ubicación"""
-    try:
-        estadisticas = use_cases.obtener_estadisticas_por_ubicacion(id_ubicacion)
-        return estadisticas
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-@router.get("/usuario/{id_usuario}/estadisticas")
-def obtener_estadisticas_por_usuario(
-    id_usuario: int,
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
-):
-    """Obtener estadísticas de sensores por usuario"""
-    try:
-        estadisticas = use_cases.obtener_estadisticas_por_usuario(id_usuario)
-        return estadisticas
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-@router.get("/{id_sensor}/validar")
-def validar_configuracion_sensor(
-    id_sensor: int,
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
-):
-    """Validar la configuración de un sensor"""
-    try:
-        validacion = use_cases.validar_configuracion_sensor(id_sensor)
-        return validacion
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-@router.put("/{id_sensor}", response_model=SensorResponse)
-def actualizar_sensor(
-    id_sensor: int,
-    sensor: SensorUpdate,
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
-):
-    """Actualizar un sensor existente"""
-    try:
-        sensor_actualizado = use_cases.actualizar_sensor(id_sensor, sensor)
-        if not sensor_actualizado:
-            raise HTTPException(status_code=404, detail="Sensor no encontrado")
-        
-        return SensorResponse(
-            id_sensor=sensor_actualizado.id_sensor,
-            nombre=sensor_actualizado.nombre,
-            id_tipo_sensor=sensor_actualizado.id_tipo_sensor,
-            id_ubicacion=sensor_actualizado.id_ubicacion,
-            id_usuario=sensor_actualizado.id_usuario,
-            activo=sensor_actualizado.activo
+        return DeviceResponse(
+            id=device.id,
+            name=device.name,
+            device_type_id=device.device_type_id,
+            location_id=device.location_id,
+            user_id=device.user_id,
+            is_active=device.is_active,
+            mac_address=getattr(device, 'mac_address', None),
+            description=getattr(device, 'description', None),
+            created_at=getattr(device, 'created_at', None)
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Internal server error: {str(e)}")
 
-@router.patch("/{id_sensor}/estado", response_model=SensorResponse)
-def cambiar_estado_sensor(
-    id_sensor: int,
-    estado: SensorEstadoUpdate,
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
+
+@router.get("/", response_model=List[DeviceResponse])
+def get_all_devices(
+    active_only: Optional[bool] = Query(
+        None, description="Filter by active status"),
+    use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
-    """Cambiar solo el estado activo/inactivo del sensor"""
+    """Get all devices or only active devices"""
     try:
-        sensor_actualizado = use_cases.cambiar_estado_sensor(id_sensor, estado.activo)
-        if not sensor_actualizado:
-            raise HTTPException(status_code=404, detail="Sensor no encontrado")
-        
-        return SensorResponse(
-            id_sensor=sensor_actualizado.id_sensor,
-            nombre=sensor_actualizado.nombre,
-            id_tipo_sensor=sensor_actualizado.id_tipo_sensor,
-            id_ubicacion=sensor_actualizado.id_ubicacion,
-            id_usuario=sensor_actualizado.id_usuario,
-            activo=sensor_actualizado.activo
+        if active_only is True:
+            devices = use_cases.get_active_devices()
+        else:
+            devices = use_cases.get_all_devices()
+
+        return [
+            DeviceResponse(
+                id=device.id,
+                name=device.name,
+                device_type_id=device.device_type_id,
+                location_id=device.location_id,
+                user_id=device.user_id,
+                is_active=device.is_active,
+                mac_address=getattr(device, 'mac_address', None),
+                description=getattr(device, 'description', None),
+                created_at=getattr(device, 'created_at', None)
+            )
+            for device in devices
+        ]
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/type/{device_type_id}", response_model=List[DeviceResponse])
+def get_devices_by_type(
+    device_type_id: int,
+    use_cases: DeviceUseCases = Depends(get_device_use_cases)
+):
+    """Get devices by type"""
+    try:
+        devices = use_cases.get_devices_by_type(device_type_id)
+        return [
+            DeviceResponse(
+                id=device.id,
+                name=device.name,
+                device_type_id=device.device_type_id,
+                location_id=device.location_id,
+                user_id=device.user_id,
+                is_active=device.is_active
+            )
+            for device in devices
+        ]
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/location/{location_id}", response_model=List[DeviceResponse])
+def get_devices_by_location(
+    location_id: int,
+    use_cases: DeviceUseCases = Depends(get_device_use_cases)
+):
+    """Get devices by location"""
+    try:
+        devices = use_cases.get_devices_by_location(location_id)
+        return [
+            DeviceResponse(
+                id=device.id,
+                name=device.name,
+                device_type_id=device.device_type_id,
+                location_id=device.location_id,
+                user_id=device.user_id,
+                is_active=device.is_active
+            )
+            for device in devices
+        ]
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/user/{user_id}", response_model=List[DeviceResponse])
+def get_devices_by_user(
+    user_id: int,
+    use_cases: DeviceUseCases = Depends(get_device_use_cases)
+):
+    """Get devices by user"""
+    try:
+        devices = use_cases.get_devices_by_user(user_id)
+        return [
+            DeviceResponse(
+                id=device.id,
+                name=device.name,
+                device_type_id=device.device_type_id,
+                location_id=device.location_id,
+                user_id=device.user_id,
+                is_active=device.is_active
+            )
+            for device in devices
+        ]
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/search/", response_model=List[DeviceResponse])
+def search_devices_by_name(
+    name: str = Query(..., min_length=2, description="Search term"),
+    use_cases: DeviceUseCases = Depends(get_device_use_cases)
+):
+    """Search devices by name"""
+    try:
+        devices = use_cases.search_devices_by_name(name)
+        return [
+            DeviceResponse(
+                id=device.id,
+                name=device.name,
+                device_type_id=device.device_type_id,
+                location_id=device.location_id,
+                user_id=device.user_id,
+                is_active=device.is_active
+            )
+            for device in devices
+        ]
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.put("/{device_id}", response_model=DeviceResponse)
+def update_device(
+    device_id: int,
+    device: DeviceUpdate,
+    use_cases: DeviceUseCases = Depends(get_device_use_cases)
+):
+    """Update an existing device"""
+    try:
+        updated_device = use_cases.update_device(device_id, device)
+        if not updated_device:
+            raise HTTPException(status_code=404, detail="Device not found")
+
+        return DeviceResponse(
+            id=updated_device.id,
+            name=updated_device.name,
+            device_type_id=updated_device.device_type_id,
+            location_id=updated_device.location_id,
+            user_id=updated_device.user_id,
+            is_active=device.is_active
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Internal server error: {str(e)}")
 
-@router.delete("/{id_sensor}")
-def eliminar_sensor(
-    id_sensor: int,
-    use_cases: SensorUseCases = Depends(get_sensor_use_cases)
+
+@router.patch("/{device_id}/status", response_model=DeviceResponse)
+def change_device_status(
+    device_id: int,
+    status: DeviceStatusUpdate,
+    use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
-    """Eliminar un sensor"""
+    """Change only the active/inactive status of the device"""
     try:
-        eliminado = use_cases.eliminar_sensor(id_sensor)
-        if not eliminado:
-            raise HTTPException(status_code=404, detail="Sensor no encontrado")
-        
-        return {"mensaje": "Sensor eliminado exitosamente"}
+        updated_device = use_cases.change_device_status(
+            device_id, status.is_active)
+        if not updated_device:
+            raise HTTPException(status_code=404, detail="Device not found")
+
+        return DeviceResponse(
+            id=updated_device.id,
+            name=updated_device.name,
+            device_type_id=updated_device.device_type_id,
+            location_id=updated_device.location_id,
+            user_id=updated_device.user_id,
+            is_active=updated_device.is_active
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.delete("/{device_id}")
+def delete_device(
+    device_id: int,
+    use_cases: DeviceUseCases = Depends(get_device_use_cases)
+):
+    """Delete a device"""
+    try:
+        deleted = use_cases.delete_device(device_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Device not found")
+
+        return {"message": "Device deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+# ===============================================================================
+# RELAY COMMAND ENDPOINT - Control de relé para dispositivos NODO_CONTROL_PZEM
+# ===============================================================================
+
+@router.post("/{mac_address}/command/relay",
+             response_model=RelayCommandResponse,
+             status_code=status.HTTP_202_ACCEPTED,
+             summary="Send relay command to device",
+             description="Sends ON/OFF command to relay of a NODO_CONTROL_PZEM device")
+def send_relay_command(
+    mac_address: str,
+    command: RelayCommandRequest,
+    current_user: UserResponse = Depends(get_current_user),
+    use_cases: DeviceUseCases = Depends(get_device_use_cases)
+):
+    """
+    Send relay command to a specific device
+
+    - **mac_address**: MAC address of the target device
+    - **action**: Command to send ("ON" or "OFF")
+
+    Only works with NODO_CONTROL_PZEM devices owned by the authenticated user.
+    """
+    try:
+        # FASE 1: VALIDACIÓN Y SEGURIDAD
+        logger.info(
+            f"🔍 User {current_user.id} requesting relay command '{command.action}' for device {mac_address}")
+
+        # FASE 2: VERIFICACIÓN DE LÓGICA DE NEGOCIO
+        validation_result = use_cases.validate_relay_command_permissions(
+            mac_address=mac_address,
+            user_id=current_user.id
+        )
+
+        device = validation_result['device']
+        logger.info(
+            f"✅ Validation passed - Device: {device.name} (Type: {validation_result['type_name']})")
+
+        # FASE 3: PUBLICACIÓN EN RABBITMQ
+        success = publish_relay_command(mac_address, command.action)
+
+        if not success:
+            logger.error(
+                f"❌ Failed to publish command to RabbitMQ for device {mac_address}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error interno del servidor"
+            )
+
+        # FASE 4: RESPUESTA DE ÉXITO
+        logger.info(
+            f"✅ Relay command '{command.action}' sent successfully to device {mac_address}")
+
+        return RelayCommandResponse(
+            status="Comando de relé enviado al dispositivo",
+            device_mac=mac_address,
+            action_sent=command.action
+        )
+
+    except ValueError as e:
+        error_message = str(e)
+        logger.warning(
+            f"⚠️ Validation error for device {mac_address}: {error_message}")
+
+        # Map specific validation errors to appropriate HTTP status codes
+        if "not found" in error_message.lower():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Dispositivo no encontrado"
+            )
+        elif "access denied" in error_message.lower() or "not owned" in error_message.lower():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Acceso denegado"
+            )
+        elif "operation not allowed" in error_message.lower():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={
+                    "error": "Operación no permitida",
+                    "detail": "Este comando solo es aplicable a dispositivos de tipo 'NODO_CONTROL_PZEM'"
+                }
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Petición inválida"
+            )
+
+    except Exception as e:
+        logger.error(f"❌ Unexpected error in relay command endpoint: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor"
+        )

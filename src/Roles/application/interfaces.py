@@ -1,27 +1,27 @@
 from abc import ABC, abstractmethod
 from typing import List
-from src.Roles.domain.schemas import RolCreate, RolUpdate, RolResponse
+from src.Roles.domain.schemas import RoleCreate, RoleUpdate, RoleResponse
 
 
-class RolRepositoryInterface(ABC):
+class RoleRepositoryInterface(ABC):
     """Puerto que define qué operaciones debe implementar un repositorio"""
 
     @abstractmethod
-    def get_all(self) -> List[RolResponse]:
+    def get_all(self) -> List[RoleResponse]:
         pass
 
     @abstractmethod
-    def get_by_id(self, id_rol: int) -> RolResponse:
+    def get_by_id(self, role_id: int) -> RoleResponse:
         pass
 
     @abstractmethod
-    def create(self, rol: RolCreate) -> RolResponse:
+    def create(self, role: RoleCreate) -> RoleResponse:
         pass
 
     @abstractmethod
-    def update(self, id_rol: int, rol: RolUpdate) -> RolResponse:
+    def update(self, role_id: int, role: RoleUpdate) -> RoleResponse:
         pass
 
     @abstractmethod
-    def delete(self, id_rol: int) -> None:
+    def delete(self, role_id: int) -> None:
         pass

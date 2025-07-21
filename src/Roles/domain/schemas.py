@@ -1,35 +1,35 @@
 """
-Esquemas de validación y transferencia de datos para Rol (Pydantic)
+Esquemas de validación y transferencia de datos para Role (Pydantic)
 """
 
 from pydantic import BaseModel, Field
 
 
-class RolBase(BaseModel):
-    nombre: str = Field(..., max_length=50)
-    descripcion: str
+class RoleBase(BaseModel):
+    name: str = Field(..., max_length=50)
+    description: str | None = None
 
     class Config:
         from_attributes = True  # Permite trabajar con objetos de ORMs como SQLAlchemy
 
 
-class RolCreate(RolBase):
+class RoleCreate(RoleBase):
     """Esquema para crear un nuevo rol"""
     pass
 
 
-class RolUpdate(BaseModel):
+class RoleUpdate(BaseModel):
     """Esquema para actualizar un rol"""
-    nombre: str | None = Field(None, max_length=50)
-    descripcion: str | None = None
+    name: str | None = Field(None, max_length=50)
+    description: str | None = None
 
     class Config:
         from_attributes = True
 
 
-class RolResponse(RolBase):
+class RoleResponse(RoleBase):
     """Esquema de respuesta para mostrar un rol"""
-    id_rol: int
+    id: int
 
     class Config:
         from_attributes = True

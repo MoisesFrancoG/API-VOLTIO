@@ -1,35 +1,35 @@
 """
-Esquemas de validación y transferencia de datos para Ubicacion (Pydantic)
+Esquemas de validación y transferencia de datos para Location (Pydantic)
 """
 
 from pydantic import BaseModel, Field
 
 
-class UbicacionBase(BaseModel):
-    nombre: str = Field(..., max_length=100)
-    descripcion: str
+class LocationBase(BaseModel):
+    name: str = Field(..., max_length=100)
+    description: str
 
     class Config:
         from_attributes = True  # Permite trabajar con objetos de ORMs como SQLAlchemy
 
 
-class UbicacionCreate(UbicacionBase):
+class LocationCreate(LocationBase):
     """Esquema para crear una nueva ubicación"""
     pass
 
 
-class UbicacionUpdate(BaseModel):
+class LocationUpdate(BaseModel):
     """Esquema para actualizar una ubicación"""
-    nombre: str | None = Field(None, max_length=100)
-    descripcion: str | None = None
+    name: str | None = Field(None, max_length=100)
+    description: str | None = None
 
     class Config:
         from_attributes = True
 
 
-class UbicacionResponse(UbicacionBase):
+class LocationResponse(LocationBase):
     """Esquema de respuesta para mostrar una ubicación"""
-    id_ubicacion: int
+    id: int
 
     class Config:
         from_attributes = True

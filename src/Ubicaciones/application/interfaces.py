@@ -1,27 +1,27 @@
 from abc import ABC, abstractmethod
 from typing import List
-from src.Ubicaciones.domain.schemas import UbicacionCreate, UbicacionUpdate, UbicacionResponse
+from src.Ubicaciones.domain.schemas import LocationCreate, LocationUpdate, LocationResponse
 
 
-class UbicacionRepositoryInterface(ABC):
+class LocationRepositoryInterface(ABC):
     """Puerto que define qué operaciones debe implementar un repositorio"""
 
     @abstractmethod
-    def get_all(self) -> List[UbicacionResponse]:
+    def get_all(self) -> List[LocationResponse]:
         pass
 
     @abstractmethod
-    def get_by_id(self, id_ubicacion: int) -> UbicacionResponse:
+    def get_by_id(self, location_id: int) -> LocationResponse:
         pass
 
     @abstractmethod
-    def create(self, ubicacion: UbicacionCreate) -> UbicacionResponse:
+    def create(self, location: LocationCreate) -> LocationResponse:
         pass
 
     @abstractmethod
-    def update(self, id_ubicacion: int, ubicacion: UbicacionUpdate) -> UbicacionResponse:
+    def update(self, location_id: int, location: LocationUpdate) -> LocationResponse:
         pass
 
     @abstractmethod
-    def delete(self, id_ubicacion: int) -> None:
+    def delete(self, location_id: int) -> None:
         pass

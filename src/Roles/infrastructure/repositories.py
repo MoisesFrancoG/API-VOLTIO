@@ -7,67 +7,67 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 
-from src.Roles.application.interfaces import RolRepositoryInterface
-from src.Roles.domain.schemas import RolCreate, RolUpdate, RolResponse
-from src.Roles.infrastructure.models import RolModel
+from src.Roles.application.interfaces import RoleRepositoryInterface
+from src.Roles.domain.schemas import RoleCreate, RoleUpdate, RoleResponse
+from src.Roles.infrastructure.models import RoleModel
 
 
-class SqlAlchemyRolRepository(RolRepositoryInterface):
+class SqlAlchemyRoleRepository(RoleRepositoryInterface):
     """Implementación del repositorio usando SQLAlchemy"""
 
     def __init__(self, db: Session):
         self.db = db
 
-    def get_all(self) -> List[RolResponse]:
+    def get_all(self) -> List[RoleResponse]:
         """Obtener todos los roles"""
-        roles = self.db.query(RolModel).all()
-        return [RolResponse.model_validate(rol) for rol in roles]
+        roles = self.db.query(RoleModel).all()
+        return [RoleResponse.model_validate(role) for role in roles]
 
-    def get_by_id(self, id_rol: int) -> RolResponse:
+    def get_by_id(self, role_id: int) -> RoleResponse:
         """Obtener un rol por ID"""
-        rol = self.db.query(RolModel).filter(RolModel.id_rol == id_rol).first()
-        if not rol:
+        role = self.db.query(RoleModel).filter(RoleModel.id == role_id).first()
+        if not role:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Rol con ID {id_rol} no encontrado"
+                detail=f"Rol con ID {role_id} no encontrado"
             )
-        return RolResponse.model_validate(rol)
+        return RoleResponse.model_validate(role)
 
-    def create(self, rol: RolCreate) -> RolResponse:
+    def create(self, role: RoleCreate) -> RoleResponse:
         """Crear un nuevo rol"""
         try:
-            db_rol = RolModel(**rol.model_dump())
-            self.db.add(db_rol)
+            db_role = RoleModel(**role.model_dump())
+            self.db.add(db_role)
             self.db.commit()
-            self.db.refresh(db_rol)
-            return RolResponse.model_validate(db_rol)
+            self.db.refresh(db_role)
+            return RoleResponse.model_validate(db_role)
         except IntegrityError:
             self.db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Ya existe un rol con el nombre '{rol.nombre}'"
+                detail=f"Ya existe un rol con el nombre '{role.name}'"
             )
 
-    def update(self, id_rol: int, rol: RolUpdate) -> RolResponse:
+    def update(self, role_id: int, role: RoleUpdate) -> RoleResponse:
         """Actualizar un rol existente"""
-        db_rol = self.db.query(RolModel).filter(
-            RolModel.id_rol == id_rol).first()
-        if not db_rol:
+        db_role = self.db.query(RoleModel).filter(
+            RoleModel.id == role_id).first()
+        if not db_role:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Rol con ID {id_rol} no encontrado"
+                detail=f"Rol con ID {role_id} no encontrado"
             )
 
         # Actualizar solo los campos que no son None
-        update_data = rol.model_dump(exclude_unset=True)
+        update_data = role.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             if value is not None:
-                setattr(db_rol, field, value)
+                setattr(db_role, field, value)
 
         try:
             self.db.commit()
-            self.db.refresh(db_rol)
-            return RolResponse.model_validate(db_rol)
+            self.db.refresh(db_role)
+            return RoleResponse.model_validate(db_role)
         except IntegrityError:
             self.db.rollback()
             raise HTTPException(
@@ -75,15 +75,15 @@ class SqlAlchemyRolRepository(RolRepositoryInterface):
                 detail=f"Ya existe un rol con el nombre especificado"
             )
 
-    def delete(self, id_rol: int) -> None:
+    def delete(self, role_id: int) -> None:
         """Eliminar un rol"""
-        db_rol = self.db.query(RolModel).filter(
-            RolModel.id_rol == id_rol).first()
-        if not db_rol:
+        db_role = self.db.query(RoleModel).filter(
+            RoleModel.id == role_id).first()
+        if not db_role:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Rol con ID {id_rol} no encontrado"
+                detail=f"Rol con ID {role_id} no encontrado"
             )
 
-        self.db.delete(db_rol)
+        self.db.delete(db_role)
         self.db.commit()

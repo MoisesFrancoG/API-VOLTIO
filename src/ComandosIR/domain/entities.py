@@ -1,32 +1,36 @@
 """
-Entidad de dominio para ComandoIR con posibles reglas de negocio
+Domain entity for DeviceCommand with business rules
 """
 
-class ComandoIR:
-    def __init__(self, id_comando: int, id_sensor: int, nombre: str, descripcion: str, comando: str):
-        self.id_comando = id_comando
-        self.id_sensor = id_sensor
-        self.nombre = nombre
-        self.descripcion = descripcion
-        self.comando = comando
 
-    def cambiar_nombre(self, nuevo_nombre: str):
-        if not nuevo_nombre or len(nuevo_nombre.strip()) < 3:
-            raise ValueError("El nombre debe tener al menos 3 caracteres.")
-        self.nombre = nuevo_nombre
+class DeviceCommand:
+    def __init__(self, id: int, device_id: int, name: str, description: str, command: str):
+        self.id = id
+        self.device_id = device_id
+        self.name = name
+        self.description = description
+        self.command = command
 
-    def actualizar_descripcion(self, nueva_desc: str):
-        self.descripcion = nueva_desc.strip()
+    def change_name(self, new_name: str):
+        if not new_name or len(new_name.strip()) < 3:
+            raise ValueError("Name must have at least 3 characters.")
+        self.name = new_name
 
-    def actualizar_comando(self, nuevo_comando: str):
-        if not nuevo_comando or len(nuevo_comando.strip()) < 1:
-            raise ValueError("El comando no puede estar vacío.")
-        self.comando = nuevo_comando.strip()
+    def update_description(self, new_desc: str):
+        self.description = new_desc.strip()
 
-    def asignar_sensor(self, nuevo_id_sensor: int):
-        if nuevo_id_sensor <= 0:
-            raise ValueError("El ID del sensor debe ser un número positivo.")
-        self.id_sensor = nuevo_id_sensor
+    def update_command(self, new_command: str):
+        if not new_command or len(new_command.strip()) < 1:
+            raise ValueError("Command cannot be empty.")
+        self.command = new_command.strip()
+
+    def assign_device(self, new_device_id: int):
+        if new_device_id <= 0:
+            raise ValueError("Device ID must be a positive number.")
+        self.device_id = new_device_id
+
+    def __repr__(self):
+        return f"<DeviceCommand(id={self.id}, name='{self.name}', device_id={self.device_id})>"
 
     def __repr__(self):
         return f"<ComandoIR id={self.id_comando}, nombre='{self.nombre}', sensor={self.id_sensor}>"

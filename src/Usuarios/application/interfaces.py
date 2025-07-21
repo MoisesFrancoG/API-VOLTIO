@@ -1,51 +1,51 @@
 """
-Interfaces para el módulo de Usuarios
+Interfaces para el módulo de Users
 """
 
 from abc import ABC, abstractmethod
 from typing import List, Optional
-from src.Usuarios.domain.schemas import UsuarioCreate, UsuarioUpdate, UsuarioResponse
+from src.Usuarios.domain.schemas import UserCreate, UserUpdate, UserResponse
 
 
-class UsuarioRepositoryInterface(ABC):
-    """Interface para el repositorio de Usuarios"""
+class UserRepositoryInterface(ABC):
+    """Interface para el repositorio de Users"""
 
     @abstractmethod
-    def get_all(self) -> List[UsuarioResponse]:
+    def get_all(self) -> List[UserResponse]:
         """Obtener todos los usuarios"""
         pass
 
     @abstractmethod
-    def get_by_id(self, id_usuario: int) -> UsuarioResponse:
+    def get_by_id(self, user_id: int) -> UserResponse:
         """Obtener un usuario por ID"""
         pass
 
     @abstractmethod
-    def get_by_email(self, correo: str) -> Optional[UsuarioResponse]:
+    def get_by_email(self, email: str) -> Optional[UserResponse]:
         """Obtener un usuario por email"""
         pass
 
     @abstractmethod
-    def create(self, usuario: UsuarioCreate) -> UsuarioResponse:
+    def create(self, user: UserCreate) -> UserResponse:
         """Crear un nuevo usuario"""
         pass
 
     @abstractmethod
-    def update(self, id_usuario: int, usuario: UsuarioUpdate) -> UsuarioResponse:
+    def update(self, user_id: int, user: UserUpdate) -> UserResponse:
         """Actualizar un usuario existente"""
         pass
 
     @abstractmethod
-    def update_password(self, id_usuario: int, nueva_contrasena_hash: str) -> UsuarioResponse:
+    def update_password(self, user_id: int, new_password_hash: str) -> UserResponse:
         """Actualizar la contraseña de un usuario"""
         pass
 
     @abstractmethod
-    def delete(self, id_usuario: int) -> None:
+    def delete(self, user_id: int) -> None:
         """Eliminar un usuario"""
         pass
 
     @abstractmethod
-    def verify_password(self, correo: str, contrasena: str) -> Optional[UsuarioResponse]:
+    def verify_password(self, email: str, password: str) -> Optional[UserResponse]:
         """Verificar credenciales de usuario"""
         pass

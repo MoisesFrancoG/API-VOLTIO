@@ -1,19 +1,19 @@
 """
-Configuración de dependencias específicas para el módulo de TipoSensores
+Dependency configuration specific to the DeviceTypes module
 """
 
 from sqlalchemy.orm import Session
 from src.core.db import get_database
-from src.TipoSensores.application.use_cases import TipoSensorUseCases
-from src.TipoSensores.infrastructure.repositories import SqlAlchemyTipoSensorRepository
+from src.TipoSensores.application.use_cases import DeviceTypeUseCases
+from src.TipoSensores.infrastructure.repositories import SqlAlchemyDeviceTypeRepository
 
 
-def get_tipo_sensor_repository(db: Session) -> SqlAlchemyTipoSensorRepository:
-    """Factory para crear instancia del repositorio de TipoSensores"""
-    return SqlAlchemyTipoSensorRepository(db)
+def get_device_type_repository(db: Session) -> SqlAlchemyDeviceTypeRepository:
+    """Factory to create DeviceType repository instance"""
+    return SqlAlchemyDeviceTypeRepository(db)
 
 
-def get_tipo_sensor_use_cases(db: Session) -> TipoSensorUseCases:
-    """Factory para crear instancia de los casos de uso de TipoSensores"""
-    repository = get_tipo_sensor_repository(db)
-    return TipoSensorUseCases(repository)
+def get_device_type_use_cases(db: Session) -> DeviceTypeUseCases:
+    """Factory to create DeviceType use cases instance"""
+    repository = get_device_type_repository(db)
+    return DeviceTypeUseCases(repository)

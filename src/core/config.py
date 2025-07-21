@@ -143,6 +143,32 @@ class Settings:
             "ssh_key_path": os.getenv("SSH_KEY_PATH")
         }
 
+    # Configuración SMTP para emails
+    @property
+    def smtp_server(self) -> str:
+        return os.getenv("SMTP_SERVER", "smtp.gmail.com")
+
+    @property
+    def smtp_port(self) -> int:
+        return int(os.getenv("SMTP_PORT", "587"))
+
+    @property
+    def smtp_username(self) -> str:
+        return os.getenv("SMTP_USERNAME", "")
+
+    @property
+    def smtp_password(self) -> str:
+        return os.getenv("SMTP_PASSWORD", "")
+
+    @property
+    def from_email(self) -> str:
+        return os.getenv("FROM_EMAIL", os.getenv("SMTP_USERNAME", ""))
+
+    @property
+    def notification_email_enabled(self) -> bool:
+        """Verifica si el servicio de email está habilitado"""
+        return bool(self.smtp_username and self.smtp_password)
+
 
 # Instancia global de configuración
 settings = Settings()

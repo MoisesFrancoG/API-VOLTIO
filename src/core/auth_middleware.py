@@ -10,8 +10,8 @@ from sqlalchemy.orm import Session
 
 from src.core.db import get_database
 from src.Usuarios.application.auth_service import AuthService
-from src.Usuarios.domain.schemas import UsuarioResponse
-from src.Usuarios.infrastructure.repositories import SqlAlchemyUsuarioRepository
+from src.Usuarios.domain.schemas import UserResponse
+from src.Usuarios.infrastructure.repositories import SqlAlchemyUserRepository
 
 # Configuración de seguridad HTTP Bearer
 security = HTTPBearer()
@@ -21,14 +21,14 @@ auth_service = AuthService()
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_database)
-) -> UsuarioResponse:
+) -> UserResponse:
     """
     Middleware global para obtener usuario autenticado mediante JWT
     Usado en todas las entidades que requieren autenticación
     """
     try:
         token_data = auth_service.verify_token(credentials.credentials)
-        repository = SqlAlchemyUsuarioRepository(db)
+        repository = SqlAlchemyUserRepository(db)
         user = repository.get_by_id(token_data.user_id)
 
         if not user:
@@ -59,8 +59,8 @@ def require_roles(allowed_roles: List[int]):
         @router.get("/admin-only")
         def admin_endpoint(user = Depends(require_roles([1]))):  # Solo admin
     """
-    def role_dependency(current_user: UsuarioResponse = Depends(get_current_user)) -> UsuarioResponse:
-        if current_user.id_rol not in allowed_roles:
+    def role_dependency(current_user: UserResponse = Depends(get_current_user)) -> UserResponse:
+        if current_user.role_id not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Sin permisos. Roles requeridos: {allowed_roles}"
@@ -72,7 +72,7 @@ def require_roles(allowed_roles: List[int]):
 
 # Middlewares preconfigurados para roles comunes
 def require_admin():
-    """Middleware que requiere rol de administrador (id_rol = 1)"""
+    """Middleware que requiere rol de administrador (role_id = 1)"""
     return require_roles([1])
 
 
@@ -87,15 +87,15 @@ def require_any_authenticated():
 
 
 # Funciones auxiliares para verificar permisos en lógica de negocio
-def user_can_modify_resource(current_user: UsuarioResponse, resource_owner_id: int) -> bool:
+def user_can_modify_resource(current_user: UserResponse, resource_owner_id: int) -> bool:
     """
     Verificar si un usuario puede modificar un recurso
     - Admin puede modificar cualquier recurso
     - Usuario normal solo puede modificar sus propios recursos
     """
-    return current_user.id_rol == 1 or current_user.id_usuario == resource_owner_id
+    return current_user.role_id == 1 or current_user.id == resource_owner_id
 
 
-def user_has_role(current_user: UsuarioResponse, required_roles: List[int]) -> bool:
+def user_has_role(current_user: UserResponse, required_roles: List[int]) -> bool:
     """Verificar si un usuario tiene alguno de los roles requeridos"""
-    return current_user.id_rol in required_roles
+    return current_user.role_id in required_roles

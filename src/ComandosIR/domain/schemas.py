@@ -1,39 +1,46 @@
 """
-Esquemas de validación y transferencia de datos para ComandoIR (Pydantic)
+Validation and data transfer schemas for DeviceCommand (Pydantic)
 """
 
 from pydantic import BaseModel, Field
 
 
-class ComandoIRBase(BaseModel):
-    id_sensor: int = Field(..., gt=0, description="ID del sensor asociado")
-    nombre: str = Field(..., max_length=100, description="Nombre del comando IR")
-    descripcion: str = Field(..., description="Descripción del comando")
-    comando: str = Field(..., max_length=255, description="Comando IR a ejecutar")
+class DeviceCommandBase(BaseModel):
+    device_capability_instance_id: int = Field(
+        ..., gt=0, description="ID of the associated device capability instance")
+    name: str = Field(..., max_length=100,
+                      description="Name of the device command")
+    description: str = Field(..., description="Description of the command")
+    command_payload: str = Field(..., max_length=255,
+                                 description="Command payload to execute")
 
     class Config:
-        from_attributes = True  # Permite trabajar con objetos de ORMs como SQLAlchemy
+        from_attributes = True  # Allows working with ORM objects like SQLAlchemy
 
 
-class ComandoIRCreate(ComandoIRBase):
-    """Esquema para crear un nuevo comando IR"""
+class DeviceCommandCreate(DeviceCommandBase):
+    """Schema for creating a new device command"""
     pass
 
 
-class ComandoIRUpdate(BaseModel):
-    """Esquema para actualizar un comando IR"""
-    id_sensor: int | None = Field(None, gt=0, description="ID del sensor asociado")
-    nombre: str | None = Field(None, max_length=100, description="Nombre del comando IR")
-    descripcion: str | None = Field(None, description="Descripción del comando")
-    comando: str | None = Field(None, max_length=255, description="Comando IR a ejecutar")
+class DeviceCommandUpdate(BaseModel):
+    """Schema for updating a device command"""
+    device_capability_instance_id: int | None = Field(
+        None, gt=0, description="ID of the associated device capability instance")
+    name: str | None = Field(None, max_length=100,
+                             description="Name of the device command")
+    description: str | None = Field(
+        None, description="Description of the command")
+    command_payload: str | None = Field(
+        None, max_length=255, description="Command payload to execute")
 
     class Config:
         from_attributes = True
 
 
-class ComandoIRResponse(ComandoIRBase):
-    """Esquema de respuesta para mostrar un comando IR"""
-    id_comando: int
+class DeviceCommandResponse(DeviceCommandBase):
+    """Response schema for displaying a device command"""
+    id: int
 
     class Config:
         from_attributes = True

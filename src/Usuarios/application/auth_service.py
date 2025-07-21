@@ -7,7 +7,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status
 from src.core.config import settings
-from src.Usuarios.domain.schemas import TokenData
+from src.Usuarios.domain.schemas import UserTokenData
 
 
 class AuthService:
@@ -26,7 +26,7 @@ class AuthService:
         to_encode.update({"exp": expire})
         return jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
 
-    def verify_token(self, token: str) -> TokenData:
+    def verify_token(self, token: str) -> UserTokenData:
         """Verificar y decodificar token JWT"""
         try:
             payload = jwt.decode(token, self.SECRET_KEY,
@@ -44,7 +44,7 @@ class AuthService:
             # Convertir user_id de string a int
             user_id = int(user_id_str)
 
-            return TokenData(user_id=user_id, email=email)
+            return UserTokenData(user_id=user_id, email=email)
         except JWTError as e:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

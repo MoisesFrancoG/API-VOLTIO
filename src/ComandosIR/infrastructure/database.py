@@ -1,19 +1,19 @@
 """
-Configuración de dependencias específicas para el módulo de ComandosIR
+Dependency configuration specific to the DeviceCommand module
 """
 
 from sqlalchemy.orm import Session
 from src.core.db import get_database
-from src.ComandosIR.application.use_cases import ComandoIRUseCases
-from src.ComandosIR.infrastructure.repositories import SqlAlchemyComandoIRRepository
+from src.ComandosIR.application.use_cases import DeviceCommandUseCases
+from src.ComandosIR.infrastructure.repositories import SqlAlchemyDeviceCommandRepository
 
 
-def get_comando_ir_repository(db: Session) -> SqlAlchemyComandoIRRepository:
-    """Factory para crear instancia del repositorio de ComandosIR"""
-    return SqlAlchemyComandoIRRepository(db)
+def get_device_command_repository(db: Session) -> SqlAlchemyDeviceCommandRepository:
+    """Factory to create DeviceCommand repository instance"""
+    return SqlAlchemyDeviceCommandRepository(db)
 
 
-def get_comando_ir_use_cases(db: Session) -> ComandoIRUseCases:
-    """Factory para crear instancia de los casos de uso de ComandosIR"""
-    repository = get_comando_ir_repository(db)
-    return ComandoIRUseCases(repository)
+def get_device_command_use_cases(db: Session) -> DeviceCommandUseCases:
+    """Factory to create DeviceCommand use cases instance"""
+    repository = get_device_command_repository(db)
+    return DeviceCommandUseCases(repository)

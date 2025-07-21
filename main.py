@@ -8,14 +8,14 @@ from sqlalchemy import text
 from src.core.db import engine, Base
 from src.core.config import settings
 from src.Roles.infrastructure.routers import router as roles_router
-from src.Usuarios.infrastructure.routers import router as usuarios_router
+from src.Usuarios.infrastructure.routers import router as users_router
 from src.Lecturas_influx_pzem.infrastructure.routers import router as lecturas_router
-from src.Ubicaciones.infrastructure.routers import router as ubicaciones_router
-from src.TipoSensores.infrastructure.routers import router as tipo_sensores_router
-from src.ComandosIR.infrastructure.routers import router as comandos_ir_router
-from src.Alertas.infrastructure.routers import router as alertas_router
-from src.Lecturas.infrastructure.routers import router as lecturas_sql_router
-from src.Sensores.infrastructure.routers import router as sensores_router
+from src.Ubicaciones.infrastructure.routers import router as locations_router
+from src.TipoSensores.infrastructure.routers import router as device_types_router
+from src.ComandosIR.infrastructure.routers import router as device_commands_router
+from src.Sensores.infrastructure.routers import router as devices_router
+from src.Notifications.infrastructure.routers import router as notifications_router
+from src.Notifications.infrastructure.service_router import router as notification_service_router
 from src.core.db_influx import close_influx_client
 
 app = FastAPI(
@@ -28,19 +28,25 @@ app = FastAPI(
 @app.on_event("startup")
 def startup_event():
     """Crear las tablas de la base de datos al iniciar la aplicación"""
-    Base.metadata.create_all(bind=engine)
+    print("📋 Creando tablas de base de datos...")
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("✅ Tablas creadas exitosamente")
+    except Exception as e:
+        print(f"❌ Error creando tablas: {e}")
+        # No vamos a detener la aplicación por errores de BD
 
 
 # Incluir los routers
 app.include_router(roles_router, prefix="/api/v1")
-app.include_router(usuarios_router, prefix="/api/v1")
+app.include_router(users_router, prefix="/api/v1")
 app.include_router(lecturas_router, prefix="/api/v1/lecturas-pzem")
-app.include_router(ubicaciones_router, prefix="/api/v1")
-app.include_router(tipo_sensores_router, prefix="/api/v1")
-app.include_router(comandos_ir_router, prefix="/api/v1")
-app.include_router(alertas_router, prefix="/api/v1")
-app.include_router(lecturas_sql_router, prefix="/api/v1")
-app.include_router(sensores_router, prefix="/api/v1")
+app.include_router(locations_router, prefix="/api/v1")
+app.include_router(device_types_router, prefix="/api/v1")
+app.include_router(device_commands_router, prefix="/api/v1")
+app.include_router(devices_router, prefix="/api/v1")
+app.include_router(notifications_router, prefix="/api/v1")
+app.include_router(notification_service_router)
 
 
 @app.on_event("shutdown")
@@ -68,7 +74,7 @@ def debug_config():
         "influx_url": settings.influx_url,
         "influx_org": settings.influx_org,
         "influx_bucket": settings.influx_bucket,
-        "secret_key_preview": settings.secret_key[:20] + "..." if settings.secret_key else None,
+        "secret_key_preview": bool(settings.secret_key) if settings.secret_key else None,
         "access_token_expire_minutes": settings.access_token_expire_minutes,
         "ssh_tunnel": settings.ssh_tunnel_info
     }
@@ -121,17 +127,17 @@ def test_deployment_v2():
             "📋 Documentación completa"
         ]
     }
-    
+
     return deployment_info
 
 
 @app.get('/test/system-info')
 def test_system_info():
     """Información detallada del sistema donde se ejecuta la API"""
-    
+
     import psutil
     import socket
-    
+
     try:
         system_info = {
             "server": {
@@ -144,7 +150,7 @@ def test_system_info():
                 "pid": os.getpid(),
                 "memory_usage": f"{psutil.Process().memory_info().rss / 1024 / 1024:.2f} MB",
                 "cpu_percent": f"{psutil.cpu_percent()}%",
-                "uptime": "Just started" # Se puede mejorar
+                "uptime": "Just started"  # Se puede mejorar
             },
             "directories": {
                 "current": str(Path.cwd()),
@@ -158,7 +164,7 @@ def test_system_info():
                 "port": 8000
             }
         }
-        
+
         # Agregar información de archivos importantes
         important_files = ["requirements.txt", ".env", "main.py", "pytest.ini"]
         system_info["files"] = {}
@@ -168,9 +174,9 @@ def test_system_info():
                 "exists": file_path.exists(),
                 "size": file_path.stat().st_size if file_path.exists() else 0
             }
-        
+
         return system_info
-        
+
     except Exception as e:
         return {
             "error": f"Error getting system info: {str(e)}",
@@ -185,12 +191,12 @@ def test_system_info():
 @app.get('/test/database-check')
 def test_database_check():
     """Verificar conectividad con las bases de datos"""
-    
+
     db_status = {
         "timestamp": datetime.datetime.now().isoformat(),
         "databases": {}
     }
-    
+
     # Verificar PostgreSQL
     try:
         from src.core.db import engine
@@ -208,7 +214,7 @@ def test_database_check():
             "error": str(e)[:100],
             "connection": "FAILED"
         }
-    
+
     # Verificar InfluxDB
     try:
         from src.core.db_influx import client
@@ -225,20 +231,20 @@ def test_database_check():
             "error": str(e)[:100],
             "connection": "FAILED"
         }
-    
+
     return db_status
 
 
 @app.get('/test/environment-vars')
 def test_environment_vars():
     """Verificar variables de entorno críticas (sin mostrar valores sensibles)"""
-    
+
     critical_vars = [
         "DB_NAME", "DB_USER", "DB_HOST", "DB_PORT",
-        "INFLUX_URL", "INFLUX_ORG", "INFLUX_BUCKET", 
+        "INFLUX_URL", "INFLUX_ORG", "INFLUX_BUCKET",
         "SECRET_KEY", "ENVIRONMENT", "DEBUG"
     ]
-    
+
     env_status = {
         "timestamp": datetime.datetime.now().isoformat(),
         "environment": os.getenv("ENVIRONMENT", "unknown"),
@@ -249,7 +255,7 @@ def test_environment_vars():
             "missing": 0
         }
     }
-    
+
     for var in critical_vars:
         value = os.getenv(var)
         if value:
@@ -265,19 +271,20 @@ def test_environment_vars():
                 "status": "❌ No configurada"
             }
             env_status["summary"]["missing"] += 1
-    
-    env_status["summary"]["status"] = "✅ Completo" if env_status["summary"]["missing"] == 0 else f"⚠️ Faltan {env_status['summary']['missing']} variables"
-    
+
+    env_status["summary"]["status"] = "✅ Completo" if env_status["summary"][
+        "missing"] == 0 else f"⚠️ Faltan {env_status['summary']['missing']} variables"
+
     return env_status
 
 
 @app.get('/test/api-performance')
 def test_api_performance():
     """Test básico de rendimiento de la API"""
-    
+
     import time
     start_time = time.time()
-    
+
     # Simular algunas operaciones
     test_data = []
     for i in range(1000):
@@ -286,9 +293,9 @@ def test_api_performance():
             "value": i * 2,
             "timestamp": datetime.datetime.now().isoformat()
         })
-    
+
     processing_time = time.time() - start_time
-    
+
     performance_info = {
         "test_name": "API Performance Test",
         "timestamp": datetime.datetime.now().isoformat(),
@@ -303,14 +310,14 @@ def test_api_performance():
             "memory_available": f"{psutil.virtual_memory().available / 1024 / 1024:.0f} MB"
         }
     }
-    
+
     return performance_info
 
 
 @app.get('/test/all-endpoints')
 def test_all_endpoints():
     """Resumen de todos los endpoints de prueba disponibles"""
-    
+
     test_endpoints = {
         "available_tests": [
             {
@@ -319,7 +326,7 @@ def test_all_endpoints():
                 "purpose": "Verificación básica de funcionamiento"
             },
             {
-                "endpoint": "/test/health", 
+                "endpoint": "/test/health",
                 "description": "Estado de salud completo",
                 "purpose": "Verificar configuración y conectividad"
             },
@@ -345,7 +352,7 @@ def test_all_endpoints():
             },
             {
                 "endpoint": "/test/environment-vars",
-                "description": "Variables de entorno - NUEVO", 
+                "description": "Variables de entorno - NUEVO",
                 "purpose": "Verificar configuración sin exponer secretos"
             },
             {
@@ -366,14 +373,14 @@ def test_all_endpoints():
             "deployment_validation": "Usa /test/deployment-v2 para validar últimos cambios"
         }
     }
-    
+
     return test_endpoints
 
 
 @app.get('/test/deployment')
 def test_deployment():
     """Endpoint de prueba original para verificar despliegue"""
-    
+
     deployment_info = {
         "status": "✅ API funcionando correctamente",
         "message": "Este endpoint confirma que el despliegue fue exitoso",
@@ -402,13 +409,11 @@ def test_deployment():
         },
         "modules_status": {
             "usuarios": "✅ Disponible",
-            "roles": "✅ Disponible", 
+            "roles": "✅ Disponible",
             "ubicaciones": "✅ Disponible",
-            "tipo_sensores": "✅ Disponible",
-            "sensores": "✅ Disponible",
-            "lecturas": "✅ Disponible",
+            "device_types": "✅ Disponible",
+            "devices": "✅ Disponible",
             "comandos_ir": "✅ Disponible",
-            "alertas": "✅ Disponible",
             "lecturas_influx_pzem": "✅ Disponible"
         },
         "database": {
@@ -441,3 +446,11 @@ def quick_test():
         "time": datetime.datetime.now().isoformat(),
         "message": "🚀 Despliegue exitoso - API respondiendo correctamente"
     }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    print("🚀 Iniciando servidor API Voltio...")
+    print(f"📊 Configuración: {settings.environment}")
+    print(f"🔗 Base de datos: {settings.db_host}:{settings.db_port}")
+    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")

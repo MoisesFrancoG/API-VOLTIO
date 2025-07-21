@@ -1,56 +1,57 @@
 """
-Esquemas de validación y transferencia de datos para Usuario (Pydantic)
+Esquemas de validación y transferencia de datos para User (Pydantic)
 """
 
 from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 
 
-class UsuarioBase(BaseModel):
-    nombre_usuario: str = Field(..., min_length=1, max_length=100)
-    correo: EmailStr = Field(..., max_length=100)
-    id_rol: int = Field(..., gt=0)
+class UserBase(BaseModel):
+    username: str = Field(..., min_length=1, max_length=100)
+    email: EmailStr = Field(..., max_length=100)
+    role_id: int = Field(default=2, gt=0)  # Default USER role (regular users)
 
     class Config:
         from_attributes = True
 
 
-class UsuarioCreate(UsuarioBase):
+class UserCreate(UserBase):
     """Esquema para crear un nuevo usuario"""
-    contrasena: str = Field(..., min_length=6, max_length=255)
+    password: str = Field(..., min_length=6, max_length=255)
+    role_id: int = Field(default=2, gt=0)  # Default: Regular USER role (ID=2)
 
 
-class UsuarioUpdate(BaseModel):
+class UserUpdate(BaseModel):
     """Esquema para actualizar un usuario"""
-    nombre_usuario: Optional[str] = Field(None, min_length=1, max_length=100)
-    correo: Optional[EmailStr] = Field(None, max_length=100)
-    id_rol: Optional[int] = Field(None, gt=0)
+    username: Optional[str] = Field(None, min_length=1, max_length=100)
+    email: Optional[EmailStr] = Field(None, max_length=100)
+    role_id: Optional[int] = Field(None, gt=0)
 
     class Config:
         from_attributes = True
 
 
-class UsuarioUpdatePassword(BaseModel):
+class UserUpdatePassword(BaseModel):
     """Esquema para actualizar contraseña"""
-    contrasena_actual: str = Field(..., min_length=1)
-    contrasena_nueva: str = Field(..., min_length=6, max_length=255)
+    current_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=6, max_length=255)
 
     class Config:
         from_attributes = True
 
 
-class UsuarioResponse(UsuarioBase):
+class UserResponse(UserBase):
     """Esquema de respuesta para mostrar un usuario"""
-    id_usuario: int
+    id: int
 
     class Config:
         from_attributes = True
 
 
-class UsuarioLogin(BaseModel):
+class UserLogin(BaseModel):
     """Esquema para login de usuario"""
-    correo: EmailStr
-    contrasena: str = Field(..., min_length=1)
+    email: EmailStr
+    password: str = Field(..., min_length=1)
 
     class Config:
         from_attributes = True
@@ -67,7 +68,7 @@ class TokenResponse(BaseModel):
         from_attributes = True
 
 
-class TokenData(BaseModel):
+class UserTokenData(BaseModel):
     """Datos contenidos en el token JWT"""
     user_id: Optional[int] = None
     email: Optional[str] = None

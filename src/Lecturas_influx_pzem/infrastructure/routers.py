@@ -4,7 +4,7 @@ from typing import List
 from fastapi import APIRouter, Depends, Query
 
 from src.core.auth_middleware import get_current_user
-from src.Usuarios.domain.schemas import UsuarioResponse
+from src.Usuarios.domain.schemas import UserResponse
 from src.Lecturas_influx_pzem.domain.schemas import LecturaPZEMResponse, TimeRange
 from src.Lecturas_influx_pzem.application.use_cases import LecturaUseCases
 from src.Lecturas_influx_pzem.infrastructure.database import get_lectura_use_cases
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/lecturas-pzem", tags=["Lecturas PZEM"])
 )
 def obtener_lecturas(
     time_range: TimeRange,
-    current_user: UsuarioResponse = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
     mac: str | None = Query(
         None, description="Filtrar por la dirección MAC del dispositivo"),
     use_cases: LecturaUseCases = Depends(get_lectura_use_cases)

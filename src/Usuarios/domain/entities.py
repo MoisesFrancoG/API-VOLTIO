@@ -1,5 +1,5 @@
 """
-Entidades de dominio para Usuario
+Entidades de dominio para User
 """
 
 from dataclasses import dataclass
@@ -7,39 +7,39 @@ from typing import Optional
 
 
 @dataclass
-class Usuario:
-    """Entidad de dominio para Usuario"""
-    id_usuario: Optional[int]
-    nombre_usuario: str
-    correo: str
-    contrasena: str
-    id_rol: int
+class User:
+    """Entidad de dominio para User"""
+    id: Optional[int]
+    username: str
+    email: str
+    password_hash: str
+    role_id: int
 
     def __post_init__(self):
         """Validaciones de dominio"""
-        if not self.nombre_usuario or len(self.nombre_usuario.strip()) == 0:
+        if not self.username or len(self.username.strip()) == 0:
             raise ValueError("El nombre de usuario no puede estar vacío")
 
-        if not self.correo or "@" not in self.correo:
-            raise ValueError("El correo debe tener un formato válido")
+        if not self.email or "@" not in self.email:
+            raise ValueError("El email debe tener un formato válido")
 
-        if not self.contrasena or len(self.contrasena) < 6:
+        if not self.password_hash or len(self.password_hash) < 6:
             raise ValueError("La contraseña debe tener al menos 6 caracteres")
 
-        if self.id_rol <= 0:
+        if self.role_id <= 0:
             raise ValueError("El ID de rol debe ser un número positivo")
 
-    def cambiar_contrasena(self, nueva_contrasena: str) -> None:
+    def change_password(self, new_password_hash: str) -> None:
         """Cambiar la contraseña del usuario"""
-        if len(nueva_contrasena) < 6:
+        if len(new_password_hash) < 6:
             raise ValueError("La contraseña debe tener al menos 6 caracteres")
-        self.contrasena = nueva_contrasena
+        self.password_hash = new_password_hash
 
-    def es_valido_para_login(self) -> bool:
+    def is_valid_for_login(self) -> bool:
         """Verificar si el usuario es válido para login"""
         return (
-            self.nombre_usuario and
-            self.correo and
-            self.contrasena and
-            self.id_rol > 0
+            self.username and
+            self.email and
+            self.password_hash and
+            self.role_id > 0
         )

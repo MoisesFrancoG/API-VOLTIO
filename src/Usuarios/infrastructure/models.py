@@ -1,5 +1,5 @@
 """
-Modelos de base de datos para Usuario (SQLAlchemy)
+Modelos de base de datos para User (SQLAlchemy)
 """
 
 from sqlalchemy import Column, Integer, String, ForeignKey
@@ -7,17 +7,20 @@ from sqlalchemy.orm import relationship
 from src.core.db import Base
 
 
-class UsuarioModel(Base):
-    __tablename__ = "usuarios"
+class UserModel(Base):
+    __tablename__ = "users"
 
-    id_usuario = Column(Integer, primary_key=True, index=True)
-    nombre_usuario = Column(String(100), nullable=False)
-    correo = Column(String(100), nullable=False, unique=True, index=True)
-    contrasena = Column(String(255), nullable=False)
-    id_rol = Column(Integer, ForeignKey("roles.id_rol"), nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(100), nullable=False)
+    email = Column(String(100), nullable=False, unique=True, index=True)
+    password_hash = Column(String(255), nullable=False)
+    role_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
 
     # Relación con la tabla roles
-    rol = relationship("RolModel", back_populates="usuarios")
+    role = relationship("RoleModel", back_populates="users")
+
+    # Relación con notificaciones
+    notifications = relationship("NotificationModel", back_populates="user")
 
     def __repr__(self):
-        return f"<UsuarioModel(id_usuario={self.id_usuario}, nombre_usuario='{self.nombre_usuario}', correo='{self.correo}')>"
+        return f"<UserModel(id={self.id}, username='{self.username}', email='{self.email}')>"

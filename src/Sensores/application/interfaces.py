@@ -1,87 +1,103 @@
 """
-Interfaces (puertos) para el módulo de Sensores
+Interfaces (ports) for the Devices module
 """
 
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
-from ..domain.entities import Sensor
-from ..domain.schemas import SensorCreate, SensorUpdate
+from ..domain.entities import Device
+from ..domain.schemas import DeviceCreate, DeviceUpdate
 
-class SensorRepository(ABC):
-    """Interfaz abstracta para el repositorio de Sensores"""
-    
+
+class DeviceRepository(ABC):
+    """Abstract interface for the Device repository"""
+
     @abstractmethod
-    def crear_sensor(self, sensor: SensorCreate) -> Sensor:
-        """Crea un nuevo sensor"""
+    def create_device(self, device) -> Device:
+        """Creates a new device"""
         pass
-    
+
     @abstractmethod
-    def obtener_sensor(self, id_sensor: int) -> Optional[Sensor]:
-        """Obtiene un sensor por su ID"""
+    def get_device(self, device_id: int) -> Optional[Device]:
+        """Gets a device by its ID"""
         pass
-    
+
     @abstractmethod
-    def obtener_todos_sensores(self) -> List[Sensor]:
-        """Obtiene todos los sensores"""
+    def get_all_devices(self) -> List[Device]:
+        """Gets all devices"""
         pass
-    
+
     @abstractmethod
-    def obtener_sensores_activos(self) -> List[Sensor]:
-        """Obtiene solo los sensores activos"""
+    def get_active_devices(self) -> List[Device]:
+        """Gets only active devices"""
         pass
-    
+
     @abstractmethod
-    def obtener_sensores_por_tipo(self, id_tipo_sensor: int) -> List[Sensor]:
-        """Obtiene sensores por tipo"""
+    def get_devices_by_type(self, device_type_id: int) -> List[Device]:
+        """Gets devices by type"""
         pass
-    
+
     @abstractmethod
-    def obtener_sensores_por_ubicacion(self, id_ubicacion: int) -> List[Sensor]:
-        """Obtiene sensores por ubicación"""
+    def get_devices_by_location(self, location_id: int) -> List[Device]:
+        """Gets devices by location"""
         pass
-    
+
     @abstractmethod
-    def obtener_sensores_por_usuario(self, id_usuario: int) -> List[Sensor]:
-        """Obtiene sensores por usuario"""
+    def get_devices_by_user(self, user_id: int) -> List[Device]:
+        """Gets devices by user"""
         pass
-    
+
     @abstractmethod
-    def buscar_sensores_por_nombre(self, nombre: str) -> List[Sensor]:
-        """Busca sensores por nombre (búsqueda parcial)"""
+    def search_devices_by_name(self, name: str) -> List[Device]:
+        """Searches devices by name (partial search)"""
         pass
-    
+
     @abstractmethod
-    def actualizar_sensor(self, id_sensor: int, sensor: SensorUpdate) -> Optional[Sensor]:
-        """Actualiza un sensor existente"""
+    def update_device(self, device_id: int, device: DeviceUpdate) -> Optional[Device]:
+        """Updates an existing device"""
         pass
-    
+
     @abstractmethod
-    def cambiar_estado_sensor(self, id_sensor: int, activo: bool) -> Optional[Sensor]:
-        """Cambia solo el estado activo/inactivo del sensor"""
+    def change_device_status(self, device_id: int, active: bool) -> Optional[Device]:
+        """Changes only the active/inactive status of the device"""
         pass
-    
+
     @abstractmethod
-    def eliminar_sensor(self, id_sensor: int) -> bool:
-        """Elimina un sensor"""
+    def delete_device(self, device_id: int) -> bool:
+        """Deletes a device"""
         pass
-    
+
     @abstractmethod
-    def contar_sensores_por_tipo(self, id_tipo_sensor: int) -> int:
-        """Cuenta sensores por tipo"""
+    def count_devices_by_type(self, device_type_id: int) -> int:
+        """Counts devices by type"""
         pass
-    
+
     @abstractmethod
-    def contar_sensores_por_ubicacion(self, id_ubicacion: int) -> int:
-        """Cuenta sensores por ubicación"""
+    def count_devices_by_location(self, location_id: int) -> int:
+        """Counts devices by location"""
         pass
-    
+
     @abstractmethod
-    def contar_sensores_por_usuario(self, id_usuario: int) -> int:
-        """Cuenta sensores por usuario"""
+    def count_devices_by_user(self, user_id: int) -> int:
+        """Counts devices by user"""
         pass
-    
+
     @abstractmethod
-    def existe_sensor_con_nombre(self, nombre: str, excluir_id: Optional[int] = None) -> bool:
-        """Verifica si existe un sensor con el nombre dado"""
+    def exists_device_with_name(self, name: str, exclude_id: Optional[int] = None) -> bool:
+        """Checks if a device with the given name exists"""
+        pass
+
+    @abstractmethod
+    def exists_device_with_mac(self, mac_address: str, exclude_id: Optional[int] = None) -> bool:
+        """Checks if a device with the given MAC address exists"""
+        pass
+
+    @abstractmethod
+    def get_by_mac_address(self, mac_address: str) -> Optional[Device]:
+        """Gets a device by its MAC address"""
+        pass
+
+    @abstractmethod
+    def get_device_with_type_by_mac(self, mac_address: str) -> Optional[dict]:
+        """Gets a device with type information by MAC address"""
         pass

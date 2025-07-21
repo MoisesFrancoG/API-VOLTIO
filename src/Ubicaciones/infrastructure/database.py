@@ -1,19 +1,19 @@
 """
-Configuración de dependencias específicas para el módulo de Ubicaciones
+Configuración de dependencias específicas para el módulo de Locations
 """
 
 from sqlalchemy.orm import Session
 from src.core.db import get_database
-from src.Ubicaciones.application.use_cases import UbicacionUseCases
-from src.Ubicaciones.infrastructure.repositories import SqlAlchemyUbicacionRepository
+from src.Ubicaciones.application.use_cases import LocationUseCases
+from src.Ubicaciones.infrastructure.repositories import SqlAlchemyLocationRepository
 
 
-def get_ubicacion_repository(db: Session) -> SqlAlchemyUbicacionRepository:
-    """Factory para crear instancia del repositorio de Ubicaciones"""
-    return SqlAlchemyUbicacionRepository(db)
+def get_location_repository(db: Session) -> SqlAlchemyLocationRepository:
+    """Factory para crear instancia del repositorio de Locations"""
+    return SqlAlchemyLocationRepository(db)
 
 
-def get_ubicacion_use_cases(db: Session) -> UbicacionUseCases:
-    """Factory para crear instancia de los casos de uso de Ubicaciones"""
-    repository = get_ubicacion_repository(db)
-    return UbicacionUseCases(repository)
+def get_location_use_cases(db: Session) -> LocationUseCases:
+    """Factory para crear instancia de los casos de uso de Locations"""
+    repository = get_location_repository(db)
+    return LocationUseCases(repository)

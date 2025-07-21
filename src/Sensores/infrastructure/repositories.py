@@ -1,177 +1,233 @@
 """
-Repositorio SQLAlchemy para el módulo de Sensores
+SQLAlchemy repository for the Devices module
 """
 
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, and_, or_
 
-from ..application.interfaces import SensorRepository
-from ..domain.entities import Sensor
-from ..domain.schemas import SensorCreate, SensorUpdate
-from .models import SensorModel
+from ..application.interfaces import DeviceRepository
+from ..domain.entities import Device
+from ..domain.schemas import DeviceCreate, DeviceUpdate
+from .models import DeviceModel
 
-class SQLAlchemySensorRepository(SensorRepository):
-    """Implementación del repositorio de Sensores usando SQLAlchemy"""
-    
+
+class SQLAlchemyDeviceRepository(DeviceRepository):
+    """Device repository implementation using SQLAlchemy"""
+
     def __init__(self, session: Session):
         self.session = session
-    
-    def _model_to_entity(self, model: SensorModel) -> Sensor:
-        """Convierte un modelo SQLAlchemy a una entidad de dominio"""
-        return Sensor(
-            id_sensor=model.id_sensor,
-            nombre=model.nombre,
-            id_tipo_sensor=model.id_tipo_sensor,
-            id_ubicacion=model.id_ubicacion,
-            id_usuario=model.id_usuario,
-            activo=model.activo
+
+    def _model_to_entity(self, model: DeviceModel) -> Device:
+        """Converts a SQLAlchemy model to a domain entity"""
+        return Device(
+            id=model.id,
+            name=model.name,
+            device_type_id=model.device_type_id,
+            location_id=model.location_id,
+            user_id=model.user_id,
+            is_active=model.is_active,
+            mac_address=getattr(model, 'mac_address', None),
+            description=getattr(model, 'description', None),
+            created_at=getattr(model, 'created_at', None)
         )
-    
-    def crear_sensor(self, sensor: SensorCreate) -> Sensor:
-        """Crea un nuevo sensor"""
-        sensor_model = SensorModel(
-            nombre=sensor.nombre,
-            id_tipo_sensor=sensor.id_tipo_sensor,
-            id_ubicacion=sensor.id_ubicacion,
-            id_usuario=sensor.id_usuario,
-            activo=sensor.activo
+
+    def create_device(self, device) -> Device:
+        """Creates a new device"""
+        device_model = DeviceModel(
+            name=device.name,
+            device_type_id=device.device_type_id,
+            location_id=device.location_id,
+            user_id=device.user_id,
+            is_active=device.is_active,
+            mac_address=getattr(device, 'mac_address', None),
+            description=getattr(device, 'description', None)
         )
-        
-        self.session.add(sensor_model)
+
+        self.session.add(device_model)
         self.session.commit()
-        self.session.refresh(sensor_model)
-        
-        return self._model_to_entity(sensor_model)
-    
-    def obtener_sensor(self, id_sensor: int) -> Optional[Sensor]:
-        """Obtiene un sensor por su ID"""
-        sensor_model = self.session.query(SensorModel).filter(SensorModel.id_sensor == id_sensor).first()
-        
-        if sensor_model:
-            return self._model_to_entity(sensor_model)
+        self.session.refresh(device_model)
+
+        return self._model_to_entity(device_model)
+
+    def get_device(self, device_id: int) -> Optional[Device]:
+        """Gets a device by its ID"""
+        device_model = self.session.query(DeviceModel).filter(
+            DeviceModel.id == device_id).first()
+
+        if device_model:
+            return self._model_to_entity(device_model)
         return None
-    
-    def obtener_todos_sensores(self) -> List[Sensor]:
-        """Obtiene todos los sensores"""
-        sensor_models = self.session.query(SensorModel).order_by(SensorModel.nombre).all()
-        
-        return [self._model_to_entity(model) for model in sensor_models]
-    
-    def obtener_sensores_activos(self) -> List[Sensor]:
-        """Obtiene solo los sensores activos"""
-        sensor_models = self.session.query(SensorModel).filter(
-            SensorModel.activo == True
-        ).order_by(SensorModel.nombre).all()
-        
-        return [self._model_to_entity(model) for model in sensor_models]
-    
-    def obtener_sensores_por_tipo(self, id_tipo_sensor: int) -> List[Sensor]:
-        """Obtiene sensores por tipo"""
-        sensor_models = self.session.query(SensorModel).filter(
-            SensorModel.id_tipo_sensor == id_tipo_sensor
-        ).order_by(SensorModel.nombre).all()
-        
-        return [self._model_to_entity(model) for model in sensor_models]
-    
-    def obtener_sensores_por_ubicacion(self, id_ubicacion: int) -> List[Sensor]:
-        """Obtiene sensores por ubicación"""
-        sensor_models = self.session.query(SensorModel).filter(
-            SensorModel.id_ubicacion == id_ubicacion
-        ).order_by(SensorModel.nombre).all()
-        
-        return [self._model_to_entity(model) for model in sensor_models]
-    
-    def obtener_sensores_por_usuario(self, id_usuario: int) -> List[Sensor]:
-        """Obtiene sensores por usuario"""
-        sensor_models = self.session.query(SensorModel).filter(
-            SensorModel.id_usuario == id_usuario
-        ).order_by(SensorModel.nombre).all()
-        
-        return [self._model_to_entity(model) for model in sensor_models]
-    
-    def buscar_sensores_por_nombre(self, nombre: str) -> List[Sensor]:
-        """Busca sensores por nombre (búsqueda parcial)"""
-        sensor_models = self.session.query(SensorModel).filter(
-            SensorModel.nombre.ilike(f"%{nombre}%")
-        ).order_by(SensorModel.nombre).all()
-        
-        return [self._model_to_entity(model) for model in sensor_models]
-    
-    def actualizar_sensor(self, id_sensor: int, sensor: SensorUpdate) -> Optional[Sensor]:
-        """Actualiza un sensor existente"""
-        sensor_model = self.session.query(SensorModel).filter(SensorModel.id_sensor == id_sensor).first()
-        
-        if not sensor_model:
+
+    def get_all_devices(self) -> List[Device]:
+        """Gets all devices"""
+        device_models = self.session.query(
+            DeviceModel).order_by(DeviceModel.name).all()
+
+        return [self._model_to_entity(model) for model in device_models]
+
+    def get_active_devices(self) -> List[Device]:
+        """Gets only active devices"""
+        device_models = self.session.query(DeviceModel).filter(
+            DeviceModel.is_active == True
+        ).order_by(DeviceModel.name).all()
+
+        return [self._model_to_entity(model) for model in device_models]
+
+    def get_devices_by_type(self, device_type_id: int) -> List[Device]:
+        """Gets devices by type"""
+        device_models = self.session.query(DeviceModel).filter(
+            DeviceModel.device_type_id == device_type_id
+        ).order_by(DeviceModel.name).all()
+
+        return [self._model_to_entity(model) for model in device_models]
+
+    def get_devices_by_location(self, location_id: int) -> List[Device]:
+        """Gets devices by location"""
+        device_models = self.session.query(DeviceModel).filter(
+            DeviceModel.location_id == location_id
+        ).order_by(DeviceModel.name).all()
+
+        return [self._model_to_entity(model) for model in device_models]
+
+    def get_devices_by_user(self, user_id: int) -> List[Device]:
+        """Gets devices by user"""
+        device_models = self.session.query(DeviceModel).filter(
+            DeviceModel.user_id == user_id
+        ).order_by(DeviceModel.name).all()
+
+        return [self._model_to_entity(model) for model in device_models]
+
+    def search_devices_by_name(self, name: str) -> List[Device]:
+        """Searches devices by name (partial search)"""
+        device_models = self.session.query(DeviceModel).filter(
+            DeviceModel.name.ilike(f"%{name}%")
+        ).order_by(DeviceModel.name).all()
+
+        return [self._model_to_entity(model) for model in device_models]
+
+    def update_device(self, device_id: int, device: DeviceUpdate) -> Optional[Device]:
+        """Updates an existing device"""
+        device_model = self.session.query(DeviceModel).filter(
+            DeviceModel.id == device_id).first()
+
+        if not device_model:
             return None
-        
-        # Actualizar solo los campos que no son None
-        if sensor.nombre is not None:
-            sensor_model.nombre = sensor.nombre
-        if sensor.id_tipo_sensor is not None:
-            sensor_model.id_tipo_sensor = sensor.id_tipo_sensor
-        if sensor.id_ubicacion is not None:
-            sensor_model.id_ubicacion = sensor.id_ubicacion
-        if sensor.id_usuario is not None:
-            sensor_model.id_usuario = sensor.id_usuario
-        if sensor.activo is not None:
-            sensor_model.activo = sensor.activo
-        
+
+        # Update only non-None fields
+        if device.name is not None:
+            device_model.name = device.name
+        if device.device_type_id is not None:
+            device_model.device_type_id = device.device_type_id
+        if device.location_id is not None:
+            device_model.location_id = device.location_id
+        if device.user_id is not None:
+            device_model.user_id = device.user_id
+        if device.is_active is not None:
+            device_model.is_active = device.is_active
+        if hasattr(device, 'mac_address') and device.mac_address is not None:
+            device_model.mac_address = device.mac_address
+        if hasattr(device, 'description') and device.description is not None:
+            device_model.description = device.description
+
         self.session.commit()
-        self.session.refresh(sensor_model)
-        
-        return self._model_to_entity(sensor_model)
-    
-    def cambiar_estado_sensor(self, id_sensor: int, activo: bool) -> Optional[Sensor]:
-        """Cambia solo el estado activo/inactivo del sensor"""
-        sensor_model = self.session.query(SensorModel).filter(SensorModel.id_sensor == id_sensor).first()
-        
-        if not sensor_model:
+        self.session.refresh(device_model)
+
+        return self._model_to_entity(device_model)
+
+    def change_device_status(self, device_id: int, active: bool) -> Optional[Device]:
+        """Changes only the active/inactive status of the device"""
+        device_model = self.session.query(DeviceModel).filter(
+            DeviceModel.id == device_id).first()
+
+        if not device_model:
             return None
-        
-        sensor_model.activo = activo
+
+        device_model.is_active = active
         self.session.commit()
-        self.session.refresh(sensor_model)
-        
-        return self._model_to_entity(sensor_model)
-    
-    def eliminar_sensor(self, id_sensor: int) -> bool:
-        """Elimina un sensor"""
-        sensor_model = self.session.query(SensorModel).filter(SensorModel.id_sensor == id_sensor).first()
-        
-        if not sensor_model:
+        self.session.refresh(device_model)
+
+        return self._model_to_entity(device_model)
+
+    def delete_device(self, device_id: int) -> bool:
+        """Deletes a device"""
+        device_model = self.session.query(DeviceModel).filter(
+            DeviceModel.id == device_id).first()
+
+        if not device_model:
             return False
-        
-        self.session.delete(sensor_model)
+
+        self.session.delete(device_model)
         self.session.commit()
         return True
-    
-    def contar_sensores_por_tipo(self, id_tipo_sensor: int) -> int:
-        """Cuenta sensores por tipo"""
-        count = self.session.query(func.count(SensorModel.id_sensor)).filter(
-            SensorModel.id_tipo_sensor == id_tipo_sensor
+
+    def count_devices_by_type(self, device_type_id: int) -> int:
+        """Counts devices by type"""
+        count = self.session.query(func.count(DeviceModel.id)).filter(
+            DeviceModel.device_type_id == device_type_id
         ).scalar()
         return count or 0
-    
-    def contar_sensores_por_ubicacion(self, id_ubicacion: int) -> int:
-        """Cuenta sensores por ubicación"""
-        count = self.session.query(func.count(SensorModel.id_sensor)).filter(
-            SensorModel.id_ubicacion == id_ubicacion
+
+    def count_devices_by_location(self, location_id: int) -> int:
+        """Counts devices by location"""
+        count = self.session.query(func.count(DeviceModel.id)).filter(
+            DeviceModel.location_id == location_id
         ).scalar()
         return count or 0
-    
-    def contar_sensores_por_usuario(self, id_usuario: int) -> int:
-        """Cuenta sensores por usuario"""
-        count = self.session.query(func.count(SensorModel.id_sensor)).filter(
-            SensorModel.id_usuario == id_usuario
+
+    def count_devices_by_user(self, user_id: int) -> int:
+        """Counts devices by user"""
+        count = self.session.query(func.count(DeviceModel.id)).filter(
+            DeviceModel.user_id == user_id
         ).scalar()
         return count or 0
-    
-    def existe_sensor_con_nombre(self, nombre: str, excluir_id: Optional[int] = None) -> bool:
-        """Verifica si existe un sensor con el nombre dado"""
-        query = self.session.query(SensorModel).filter(SensorModel.nombre == nombre)
-        
-        if excluir_id:
-            query = query.filter(SensorModel.id_sensor != excluir_id)
-        
+
+    def exists_device_with_name(self, name: str, exclude_id: Optional[int] = None) -> bool:
+        """Checks if a device with the given name exists"""
+        query = self.session.query(DeviceModel).filter(
+            DeviceModel.name == name)
+
+        if exclude_id:
+            query = query.filter(DeviceModel.id != exclude_id)
+
         return query.first() is not None
+
+    def exists_device_with_mac(self, mac_address: str, exclude_id: Optional[int] = None) -> bool:
+        """Checks if a device with the given MAC address exists"""
+        query = self.session.query(DeviceModel).filter(
+            DeviceModel.mac_address == mac_address)
+
+        if exclude_id:
+            query = query.filter(DeviceModel.id != exclude_id)
+
+        return query.first() is not None
+
+    def get_by_mac_address(self, mac_address: str) -> Optional[Device]:
+        """Gets a device by its MAC address"""
+        device_model = self.session.query(DeviceModel).filter(
+            DeviceModel.mac_address == mac_address).first()
+
+        if device_model:
+            return self._model_to_entity(device_model)
+        return None
+
+    def get_device_with_type_by_mac(self, mac_address: str) -> Optional[dict]:
+        """Gets a device with type information by MAC address"""
+        from src.TipoSensores.infrastructure.models import DeviceTypeModel
+
+        result = self.session.query(
+            DeviceModel,
+            DeviceTypeModel.type_name
+        ).join(
+            DeviceTypeModel, DeviceModel.device_type_id == DeviceTypeModel.id
+        ).filter(
+            DeviceModel.mac_address == mac_address
+        ).first()
+
+        if result:
+            device_model, type_name = result
+            return {
+                'device': self._model_to_entity(device_model),
+                'type_name': type_name
+            }
+        return None

@@ -1,5 +1,5 @@
 """
-Modelos de base de datos para ComandoIR (SQLAlchemy)
+Database models for DeviceCommand (SQLAlchemy)
 """
 
 from sqlalchemy import Column, Integer, String, Text, ForeignKey
@@ -7,17 +7,18 @@ from sqlalchemy.orm import relationship
 from src.core.db import Base
 
 
-class ComandoIRModel(Base):
-    __tablename__ = "comandos_ir"
+class DeviceCommandModel(Base):
+    __tablename__ = "device_commands"
 
-    id_comando = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    id_sensor = Column(Integer, nullable=False, index=True)  # ForeignKey se agregará cuando exista la tabla sensores
-    nombre = Column(String(100), nullable=False, index=True)
-    descripcion = Column(Text, nullable=False)
-    comando = Column(String(255), nullable=False)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    device_capability_instance_id = Column(
+        Integer, nullable=False, index=True)  # ForeignKey to devices table
+    name = Column(String(100), nullable=False, index=True)
+    description = Column(Text, nullable=False)
+    command_payload = Column(String(255), nullable=False)
 
-    # Nota: La relación con sensores se agregará cuando se implemente el módulo Sensores
-    # sensor = relationship("SensorModel", back_populates="comandos_ir")
+    # Note: Relationship with devices will be added when both modules are fully integrated
+    # device = relationship("DeviceModel", back_populates="device_commands")
 
     def __repr__(self):
-        return f"<ComandoIRModel(id_comando={self.id_comando}, nombre='{self.nombre}', sensor={self.id_sensor})>"
+        return f"<DeviceCommandModel(id={self.id}, name='{self.name}', device={self.device_id})>"

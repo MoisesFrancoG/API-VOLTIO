@@ -1,34 +1,34 @@
 from typing import List
-from src.ComandosIR.domain.schemas import ComandoIRCreate, ComandoIRUpdate, ComandoIRResponse
-from src.ComandosIR.application.interfaces import ComandoIRRepositoryInterface
+from src.ComandosIR.domain.schemas import DeviceCommandCreate, DeviceCommandUpdate, DeviceCommandResponse
+from src.ComandosIR.application.interfaces import DeviceCommandRepositoryInterface
 
 
-class ComandoIRUseCases:
-    """Casos de uso para la entidad ComandoIR"""
+class DeviceCommandUseCases:
+    """Use cases for the DeviceCommand entity"""
 
-    def __init__(self, repository: ComandoIRRepositoryInterface):
+    def __init__(self, repository: DeviceCommandRepositoryInterface):
         self.repository = repository
 
-    def listar_comandos_ir(self) -> List[ComandoIRResponse]:
-        """Listar todos los comandos IR"""
+    def list_device_commands(self) -> List[DeviceCommandResponse]:
+        """List all device commands"""
         return self.repository.get_all()
 
-    def obtener_comando_ir(self, id_comando: int) -> ComandoIRResponse:
-        """Obtener un comando IR por ID"""
-        return self.repository.get_by_id(id_comando)
+    def get_device_command(self, id: int) -> DeviceCommandResponse:
+        """Get a device command by ID"""
+        return self.repository.get_by_id(id)
 
-    def obtener_comandos_por_sensor(self, id_sensor: int) -> List[ComandoIRResponse]:
-        """Obtener todos los comandos IR de un sensor específico"""
-        return self.repository.get_by_sensor(id_sensor)
+    def get_commands_by_device(self, device_id: int) -> List[DeviceCommandResponse]:
+        """Get all device commands for a specific device"""
+        return self.repository.get_by_device(device_id)
 
-    def crear_comando_ir(self, comando_ir: ComandoIRCreate) -> ComandoIRResponse:
-        """Crear un nuevo comando IR"""
-        return self.repository.create(comando_ir)
+    def create_device_command(self, device_command: DeviceCommandCreate) -> DeviceCommandResponse:
+        """Create a new device command"""
+        return self.repository.create(device_command)
 
-    def actualizar_comando_ir(self, id_comando: int, comando_ir: ComandoIRUpdate) -> ComandoIRResponse:
-        """Actualizar un comando IR existente"""
-        return self.repository.update(id_comando, comando_ir)
+    def update_device_command(self, id: int, device_command: DeviceCommandUpdate) -> DeviceCommandResponse:
+        """Update an existing device command"""
+        return self.repository.update(id, device_command)
 
-    def eliminar_comando_ir(self, id_comando: int) -> None:
-        """Eliminar un comando IR"""
-        self.repository.delete(id_comando)
+    def delete_device_command(self, id: int) -> None:
+        """Delete a device command"""
+        self.repository.delete(id)

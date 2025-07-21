@@ -1,5 +1,5 @@
 """
-Rutas FastAPI para el módulo de ComandosIR
+FastAPI routes for the DeviceCommand module
 """
 
 from typing import List
@@ -8,107 +8,106 @@ from sqlalchemy.orm import Session
 
 from src.core.db import get_database
 from src.core.auth_middleware import get_current_user, require_admin, require_admin_or_moderator
-from src.Usuarios.domain.schemas import UsuarioResponse
-from src.ComandosIR.domain.schemas import ComandoIRCreate, ComandoIRUpdate, ComandoIRResponse
-from src.ComandosIR.application.use_cases import ComandoIRUseCases
-from src.ComandosIR.infrastructure.database import get_comando_ir_use_cases
+from src.Usuarios.domain.schemas import UserResponse
+from src.ComandosIR.domain.schemas import DeviceCommandCreate, DeviceCommandUpdate, DeviceCommandResponse
+from src.ComandosIR.application.use_cases import DeviceCommandUseCases
+from src.ComandosIR.infrastructure.database import get_device_command_use_cases
 
 
-router = APIRouter(prefix="/comandos-ir", tags=["Comandos IR"])
+router = APIRouter(prefix="/device-commands", tags=["Device Commands"])
 
 
-def get_use_cases(db: Session = Depends(get_database)) -> ComandoIRUseCases:
-    """Dependency para obtener los casos de uso de ComandoIR"""
-    return get_comando_ir_use_cases(db)
+def get_use_cases(db: Session = Depends(get_database)) -> DeviceCommandUseCases:
+    """Dependency to get DeviceCommand use cases"""
+    return get_device_command_use_cases(db)
 
 
 @router.get(
     "/",
-    response_model=List[ComandoIRResponse],
-    summary="Listar todos los comandos IR",
-    description="Obtiene una lista de todos los comandos IR (requiere autenticación)"
+    response_model=List[DeviceCommandResponse],
+    summary="List all device commands",
+    description="Get a list of all device commands (requires authentication)"
 )
-def listar_comandos_ir(
-    current_user: UsuarioResponse = Depends(get_current_user),
-    use_cases: ComandoIRUseCases = Depends(get_use_cases)
+def list_device_commands(
+    current_user: UserResponse = Depends(get_current_user),
+    use_cases: DeviceCommandUseCases = Depends(get_use_cases)
 ):
-    """Obtener todos los comandos IR (requiere autenticación)"""
-    return use_cases.listar_comandos_ir()
+    """Get all device commands (requires authentication)"""
+    return use_cases.list_device_commands()
 
 
 @router.get(
-    "/sensor/{id_sensor}",
-    response_model=List[ComandoIRResponse],
-    summary="Listar comandos IR por sensor",
-    description="Obtiene todos los comandos IR de un sensor específico (requiere autenticación)"
+    "/device/{device_id}",
+    response_model=List[DeviceCommandResponse],
+    summary="List device commands by device",
+    description="Get all device commands for a specific device (requires authentication)"
 )
-def listar_comandos_por_sensor(
-    id_sensor: int,
-    current_user: UsuarioResponse = Depends(get_current_user),
-    use_cases: ComandoIRUseCases = Depends(get_use_cases)
+def list_commands_by_device(
+    device_id: int,
+    current_user: UserResponse = Depends(get_current_user),
+    use_cases: DeviceCommandUseCases = Depends(get_use_cases)
 ):
-    """Obtener todos los comandos IR de un sensor específico (requiere autenticación)"""
-    return use_cases.obtener_comandos_por_sensor(id_sensor)
+    """Get all device commands for a specific device (requires authentication)"""
+    return use_cases.get_commands_by_device(device_id)
 
 
 @router.get(
-    "/{id_comando}",
-    response_model=ComandoIRResponse,
-    summary="Obtener comando IR por ID",
-    description="Obtiene un comando IR específico por su ID (requiere autenticación)"
+    "/{id}",
+    response_model=DeviceCommandResponse,
+    summary="Get device command by ID",
+    description="Get a specific device command by its ID (requires authentication)"
 )
-def obtener_comando_ir(
-    id_comando: int,
-    current_user: UsuarioResponse = Depends(get_current_user),
-    use_cases: ComandoIRUseCases = Depends(get_use_cases)
+def get_device_command(
+    id: int,
+    current_user: UserResponse = Depends(get_current_user),
+    use_cases: DeviceCommandUseCases = Depends(get_use_cases)
 ):
-    """Obtener un comando IR por ID (requiere autenticación)"""
-    return use_cases.obtener_comando_ir(id_comando)
+    """Get a specific device command by ID (requires authentication)"""
+    return use_cases.get_device_command(id)
 
 
 @router.post(
     "/",
-    response_model=ComandoIRResponse,
+    response_model=DeviceCommandResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Crear nuevo comando IR",
-    description="Crea un nuevo comando IR en el sistema (requiere permisos de admin o moderador)"
+    summary="Create device command",
+    description="Create a new device command (requires admin permissions)"
 )
-def crear_comando_ir(
-    comando_ir: ComandoIRCreate,
-    current_user: UsuarioResponse = Depends(require_admin_or_moderator()),
-    use_cases: ComandoIRUseCases = Depends(get_use_cases)
+def create_device_command(
+    device_command: DeviceCommandCreate,
+    current_user: UserResponse = Depends(require_admin()),
+    use_cases: DeviceCommandUseCases = Depends(get_use_cases)
 ):
-    """Crear un nuevo comando IR (requiere admin o moderador)"""
-    return use_cases.crear_comando_ir(comando_ir)
+    """Create a new device command (requires admin only)"""
+    return use_cases.create_device_command(device_command)
 
 
 @router.put(
-    "/{id_comando}",
-    response_model=ComandoIRResponse,
-    summary="Actualizar comando IR",
-    description="Actualiza un comando IR existente (requiere permisos de admin o moderador)"
+    "/{id}",
+    response_model=DeviceCommandResponse,
+    summary="Update device command",
+    description="Update an existing device command (requires admin permissions)"
 )
-def actualizar_comando_ir(
-    id_comando: int,
-    comando_ir: ComandoIRUpdate,
-    current_user: UsuarioResponse = Depends(require_admin_or_moderator()),
-    use_cases: ComandoIRUseCases = Depends(get_use_cases)
+def update_device_command(
+    id: int,
+    device_command: DeviceCommandUpdate,
+    current_user: UserResponse = Depends(require_admin()),
+    use_cases: DeviceCommandUseCases = Depends(get_use_cases)
 ):
-    """Actualizar un comando IR existente (requiere admin o moderador)"""
-    return use_cases.actualizar_comando_ir(id_comando, comando_ir)
+    """Update an existing device command (requires admin only)"""
+    return use_cases.update_device_command(id, device_command)
 
 
 @router.delete(
-    "/{id_comando}",
+    "/{id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Eliminar comando IR",
-    description="Elimina un comando IR del sistema (requiere permisos de administrador)"
+    summary="Delete device command",
+    description="Delete a device command (requires admin permissions)"
 )
-def eliminar_comando_ir(
-    id_comando: int,
-    current_user: UsuarioResponse = Depends(require_admin()),
-    use_cases: ComandoIRUseCases = Depends(get_use_cases)
+def delete_device_command(
+    id: int,
+    current_user: UserResponse = Depends(require_admin),
+    use_cases: DeviceCommandUseCases = Depends(get_use_cases)
 ):
-    """Eliminar un comando IR (requiere admin)"""
-    use_cases.eliminar_comando_ir(id_comando)
-    return {"message": "Comando IR eliminado exitosamente"}
+    """Delete a device command (requires admin permissions)"""
+    use_cases.delete_device_command(id)
