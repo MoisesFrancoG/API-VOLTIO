@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/devices", tags=["devices"])
 
 
-@router.post("/", response_model=DeviceResponse)
+@router.post("/", response_model=DeviceResponse, status_code=status.HTTP_201_CREATED)
 def create_device(
     device: DeviceCreate,
     current_user: UserResponse = Depends(get_current_user),
