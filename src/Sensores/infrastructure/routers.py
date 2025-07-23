@@ -63,9 +63,10 @@ def create_device(
 @router.get("/{device_id}", response_model=DeviceResponse)
 def get_device(
     device_id: int,
+    current_user: UserResponse = Depends(get_current_user),
     use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
-    """Get a specific device by ID"""
+    """Get a specific device by ID (requires authentication)"""
     try:
         device = use_cases.get_device(device_id)
         if not device:
@@ -95,9 +96,10 @@ def get_device(
 def get_all_devices(
     active_only: Optional[bool] = Query(
         None, description="Filter by active status"),
+    current_user: UserResponse = Depends(get_current_user),
     use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
-    """Get all devices or only active devices"""
+    """Get all devices or only active devices (requires authentication)"""
     try:
         if active_only is True:
             devices = use_cases.get_active_devices()
@@ -126,9 +128,10 @@ def get_all_devices(
 @router.get("/type/{device_type_id}", response_model=List[DeviceResponse])
 def get_devices_by_type(
     device_type_id: int,
+    current_user: UserResponse = Depends(get_current_user),
     use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
-    """Get devices by type"""
+    """Get devices by type (requires authentication)"""
     try:
         devices = use_cases.get_devices_by_type(device_type_id)
         return [
@@ -152,9 +155,10 @@ def get_devices_by_type(
 @router.get("/location/{location_id}", response_model=List[DeviceResponse])
 def get_devices_by_location(
     location_id: int,
+    current_user: UserResponse = Depends(get_current_user),
     use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
-    """Get devices by location"""
+    """Get devices by location (requires authentication)"""
     try:
         devices = use_cases.get_devices_by_location(location_id)
         return [
@@ -178,9 +182,10 @@ def get_devices_by_location(
 @router.get("/user/{user_id}", response_model=List[DeviceResponse])
 def get_devices_by_user(
     user_id: int,
+    current_user: UserResponse = Depends(get_current_user),
     use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
-    """Get devices by user"""
+    """Get devices by user (requires authentication)"""
     try:
         devices = use_cases.get_devices_by_user(user_id)
         return [
@@ -204,9 +209,10 @@ def get_devices_by_user(
 @router.get("/search/", response_model=List[DeviceResponse])
 def search_devices_by_name(
     name: str = Query(..., min_length=2, description="Search term"),
+    current_user: UserResponse = Depends(get_current_user),
     use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
-    """Search devices by name"""
+    """Search devices by name (requires authentication)"""
     try:
         devices = use_cases.search_devices_by_name(name)
         return [
@@ -216,7 +222,10 @@ def search_devices_by_name(
                 device_type_id=device.device_type_id,
                 location_id=device.location_id,
                 user_id=device.user_id,
-                is_active=device.is_active
+                is_active=device.is_active,
+                mac_address=getattr(device, 'mac_address', None),
+                description=getattr(device, 'description', None),
+                created_at=getattr(device, 'created_at', None)
             )
             for device in devices
         ]
@@ -231,9 +240,10 @@ def search_devices_by_name(
 def update_device(
     device_id: int,
     device: DeviceUpdate,
+    current_user: UserResponse = Depends(get_current_user),
     use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
-    """Update an existing device"""
+    """Update an existing device (requires authentication)"""
     try:
         updated_device = use_cases.update_device(device_id, device)
         if not updated_device:
@@ -245,7 +255,10 @@ def update_device(
             device_type_id=updated_device.device_type_id,
             location_id=updated_device.location_id,
             user_id=updated_device.user_id,
-            is_active=device.is_active
+            is_active=updated_device.is_active,
+            mac_address=getattr(updated_device, 'mac_address', None),
+            description=getattr(updated_device, 'description', None),
+            created_at=getattr(updated_device, 'created_at', None)
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -260,9 +273,10 @@ def update_device(
 def change_device_status(
     device_id: int,
     status: DeviceStatusUpdate,
+    current_user: UserResponse = Depends(get_current_user),
     use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
-    """Change only the active/inactive status of the device"""
+    """Change only the active/inactive status of the device (requires authentication)"""
     try:
         updated_device = use_cases.change_device_status(
             device_id, status.is_active)
@@ -289,9 +303,10 @@ def change_device_status(
 @router.delete("/{device_id}")
 def delete_device(
     device_id: int,
+    current_user: UserResponse = Depends(get_current_user),
     use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
-    """Delete a device"""
+    """Delete a device (requires authentication)"""
     try:
         deleted = use_cases.delete_device(device_id)
         if not deleted:

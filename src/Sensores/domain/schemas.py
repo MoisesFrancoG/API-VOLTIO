@@ -144,10 +144,20 @@ class DeviceUpdate(BaseModel):
         from_attributes = True
 
 
-class DeviceResponse(DeviceBase):
+class DeviceResponse(BaseModel):
     """Response schema for displaying a device"""
     id: int
+    name: str
+    device_type_id: int
+    location_id: int
+    user_id: int
+    is_active: bool = Field(default=True)
+    mac_address: Optional[str] = None
+    description: Optional[str] = None
     created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
 
     class Config:
         from_attributes = True
