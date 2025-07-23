@@ -60,7 +60,7 @@ jobs:
         run: |
           # Ejecutar tests de configuración y validación
           python run_all_tests.py || echo "⚠️ Tests completados con warnings"
-          
+
           # Validar que la aplicación se inicie correctamente
           echo "🧪 Validando inicio de aplicación..."
           timeout 10s python -c "

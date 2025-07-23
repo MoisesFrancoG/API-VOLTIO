@@ -207,6 +207,9 @@ class Settings:
                 "https://dashboard.voltio.com",
                 "https://admin.voltio.com",
                 "https://app.voltio.com",
+                "https://voltio.acstree.xyz",
+                "http://localhost:4200",   
+                
             ]
     
     @property
