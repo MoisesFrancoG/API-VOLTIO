@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import datetime
 import os
 import sys
@@ -23,6 +24,40 @@ app = FastAPI(
     description="API para el sistema de monitoreo de sensores Voltio",
     version="1.0.0"
 )
+
+# ============================================
+# 🌐 CONFIGURACIÓN CORS
+# ============================================
+
+# Configurar CORS Middleware usando configuración centralizada
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,           # Orígenes desde config
+    allow_credentials=settings.cors_allow_credentials,
+    allow_methods=settings.cors_allow_methods,     # Métodos permitidos
+    allow_headers=settings.cors_allow_headers,     # Headers permitidos
+    expose_headers=settings.cors_expose_headers,   # Headers expuestos
+    max_age=settings.cors_max_age,                # Cache preflight
+)
+
+# ============================================
+# 🔧 ENDPOINT PARA VERIFICAR CORS
+# ============================================
+
+@app.get("/cors-info")
+def cors_info():
+    """Endpoint para verificar configuración de CORS"""
+    return {
+        "cors_enabled": True,
+        "environment": settings.environment,
+        "allowed_origins": settings.cors_origins,
+        "allowed_methods": settings.cors_allow_methods,
+        "allowed_headers": settings.cors_allow_headers,
+        "credentials_allowed": settings.cors_allow_credentials,
+        "max_age_seconds": settings.cors_max_age,
+        "timestamp": datetime.datetime.now().isoformat(),
+        "note": "CORS configuration loaded from environment variables and config.py"
+    }
 
 
 @app.on_event("startup")
@@ -96,6 +131,114 @@ def debug_config():
             }
 
     return config_info
+
+
+@app.get('/debug/get-token')
+def get_debug_token():
+    """
+    Endpoint de debug para obtener tokens de prueba
+    Solo disponible en desarrollo - NO usar en producción
+    """
+    if settings.environment != "development":
+        return {"error": "Este endpoint solo está disponible en modo desarrollo"}
+    
+    from src.core.auth_middleware import create_access_token
+    from src.Usuarios.infrastructure.repositories import UserRepository
+    from src.core.db import get_db
+    
+    # Obtener conexión a la base de datos
+    db = next(get_db())
+    user_repo = UserRepository(db)
+    
+    try:
+        # Buscar usuario SuperAdmin
+        superadmin = user_repo.get_user_by_email("superadmin@voltio.com")
+        if not superadmin:
+            return {"error": "Usuario SuperAdmin no encontrado"}
+        
+        # Crear token
+        token_data = {"sub": superadmin.email, "user_id": superadmin.id}
+        access_token = create_access_token(data=token_data)
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": superadmin.id,
+                "username": superadmin.username,
+                "email": superadmin.email,
+                "role_id": superadmin.role_id
+            },
+            "expires_in_minutes": settings.access_token_expire_minutes,
+            "usage": "Authorization: Bearer <access_token>",
+            "warning": "⚠️ Solo para desarrollo - NO usar en producción"
+        }
+        
+    except Exception as e:
+        return {"error": f"Error generando token: {str(e)}"}
+
+
+@app.get('/debug/test-tokens')
+def get_all_test_tokens():
+    """
+    Endpoint de debug para obtener tokens de todos los tipos de usuarios
+    Solo disponible en desarrollo - NO usar en producción
+    """
+    if settings.environment != "development":
+        return {"error": "Este endpoint solo está disponible en modo desarrollo"}
+    
+    from src.core.auth_middleware import create_access_token
+    from src.Usuarios.infrastructure.repositories import UserRepository
+    from src.core.db import get_db
+    
+    # Obtener conexión a la base de datos
+    db = next(get_db())
+    user_repo = UserRepository(db)
+    
+    try:
+        tokens = {}
+        
+        # Lista de usuarios de prueba (basado en tus credenciales de test)
+        test_users = [
+            "superadmin@voltio.com",
+            "admin@voltio.com", 
+            "user@voltio.com",
+            "guest@voltio.com"
+        ]
+        
+        for email in test_users:
+            user = user_repo.get_user_by_email(email)
+            if user:
+                token_data = {"sub": user.email, "user_id": user.id}
+                access_token = create_access_token(data=token_data)
+                
+                # Obtener nombre del rol si existe
+                role_name = "Unknown"
+                if hasattr(user, 'role') and user.role:
+                    role_name = user.role.name
+                
+                tokens[email] = {
+                    "access_token": access_token,
+                    "token_type": "bearer",
+                    "user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                        "role_id": user.role_id,
+                        "role_name": role_name
+                    }
+                }
+        
+        return {
+            "tokens": tokens,
+            "expires_in_minutes": settings.access_token_expire_minutes,
+            "usage": "Authorization: Bearer <access_token>",
+            "example_curl": "curl -H 'Authorization: Bearer <token>' https://voltioapi.acstree.xyz/api/v1/users/me",
+            "warning": "⚠️ Solo para desarrollo - NO usar en producción"
+        }
+        
+    except Exception as e:
+        return {"error": f"Error generando tokens: {str(e)}"}
 
 
 @app.get('/test/deployment-v2')

@@ -1,15 +1,17 @@
 # 🚨 DIAGNÓSTICO Y REPARACIÓN - API VOLTIO PRODUCCIÓN
 
 ## 📊 **Estado Actual:**
+
 - ✅ **API Principal:** Funcionando (FastAPI se ejecuta)
 - ✅ **Documentación:** Accesible en https://voltioapi.acstree.xyz/docs
 - ❌ **Autenticación:** Error 500 en todos los endpoints de login
 - ❌ **Base de Datos:** Problemas de conexión
 
 ## 🔍 **Diagnóstico Realizado:**
+
 ```
 ✅ Root endpoint: 200
-✅ OpenAPI schema: 200  
+✅ OpenAPI schema: 200
 ✅ Documentation: 200
 ❌ Users login: 500 (Internal Server Error)
 ❌ Todas las credenciales: 500
@@ -18,12 +20,14 @@
 ## 🛠️ **ACCIONES NECESARIAS EN EL SERVIDOR:**
 
 ### 1️⃣ **Verificar Variables de Entorno:**
+
 ```bash
 cd /home/deploy/API-VOLTIO
 cat .env
 ```
 
 **Credenciales actualizadas que deben estar:**
+
 ```bash
 # PostgreSQL (NUEVAS credenciales)
 DB_HOST=localhost
@@ -46,6 +50,7 @@ SSH_TUNNEL_ENABLED=true
 ```
 
 ### 2️⃣ **Verificar Conexión PostgreSQL:**
+
 ```bash
 # Probar conexión directa
 psql -h localhost -p 5432 -U voltio_user -d voltio_db
@@ -55,6 +60,7 @@ ps aux | grep ssh
 ```
 
 ### 3️⃣ **Verificar Túnel SSH:**
+
 ```bash
 # Verificar si está corriendo
 sudo supervisorctl status ssh-tunnel
@@ -67,6 +73,7 @@ netstat -tlnp | grep 5432
 ```
 
 ### 4️⃣ **Verificar Logs de la Aplicación:**
+
 ```bash
 # Ver logs de la aplicación
 sudo supervisorctl tail -f voltio-api
@@ -76,6 +83,7 @@ journalctl -u voltio-api -f
 ```
 
 ### 5️⃣ **Reiniciar Servicios:**
+
 ```bash
 # Reiniciar túnel SSH
 sudo supervisorctl restart ssh-tunnel
@@ -88,6 +96,7 @@ sudo supervisorctl status
 ```
 
 ### 6️⃣ **Aplicar Credenciales Actualizadas:**
+
 Si el archivo `.env` no tiene las credenciales correctas:
 
 ```bash
@@ -113,6 +122,7 @@ curl http://localhost:8000/api/v1/users/login -X POST \
 ```
 
 Respuesta esperada:
+
 ```json
 {
   "access_token": "eyJ...",
@@ -121,6 +131,7 @@ Respuesta esperada:
 ```
 
 ## 📝 **Checklist de Reparación:**
+
 - [ ] Variables de entorno verificadas
 - [ ] PostgreSQL accesible
 - [ ] Túnel SSH funcionando
@@ -130,12 +141,15 @@ Respuesta esperada:
 - [ ] Endpoints autenticados respondiendo
 
 ## 🎯 **Resultado Esperado:**
+
 Después de las correcciones, el API debe responder:
+
 - ✅ Login exitoso (Status 200)
 - ✅ Endpoints autenticados funcionando
 - ✅ Comandos de relé operativos
 - ✅ Lecturas PZEM funcionando
 
 ---
+
 **Estado:** ⚠️ Requiere intervención en servidor  
 **Prioridad:** 🔥 Alta - Funcionalidad crítica afectada

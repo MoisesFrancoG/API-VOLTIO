@@ -1,17 +1,20 @@
 # Configurar API sin Túnel SSH y Reiniciar
 
 ## 1. Conectar al servidor
+
 ```bash
 ssh -i voltioBD.pem ubuntu@voltioapi.acstree.xyz
 ```
 
 ## 2. Acceder al usuario deploy
+
 ```bash
 sudo su - deploy
 cd /home/deploy/API-VOLTIO
 ```
 
 ## 2.1. Configurar conexión directa a PostgreSQL (SIN túnel SSH)
+
 ```bash
 # Editar el archivo .env
 nano .env
@@ -26,6 +29,7 @@ nano .env
 ```
 
 ## 2.2. Archivo .env completo para conexión directa
+
 ```bash
 cat > .env << 'EOF'
 # Database Configuration - Conexión Directa
@@ -56,6 +60,7 @@ EOF
 ```
 
 ## 3. Verificar conectividad a PostgreSQL
+
 ```bash
 # Probar conexión directa desde el servidor
 telnet 13.222.89.227 5432
@@ -68,6 +73,7 @@ psql -h 13.222.89.227 -p 5432 -U chmma -d voltiodb
 ```
 
 ## 4. Reiniciar el servicio voltio-api
+
 ```bash
 # Con supervisor (si está configurado)
 sudo supervisorctl restart voltio-api
@@ -81,6 +87,7 @@ sudo supervisorctl start voltio-api
 ```
 
 ## 5. Verificar el estado del servicio
+
 ```bash
 # Estado del servicio
 sudo supervisorctl status voltio-api
@@ -94,12 +101,14 @@ sudo journalctl -u voltio-api -f
 ```
 
 ## 6. Verificar que la API responde
+
 ```bash
 curl -X GET "https://voltioapi.acstree.xyz/docs"
 curl -X GET "https://voltioapi.acstree.xyz/health"
 ```
 
 ## Comandos rápidos para cambiar configuración:
+
 ```bash
 # Comando completo para actualizar .env y reiniciar
 ssh -i voltioBD.pem ubuntu@voltioapi.acstree.xyz '
@@ -112,11 +121,12 @@ sudo supervisorctl restart voltio-api
 ```
 
 ## Troubleshooting PostgreSQL
+
 Si hay problemas de conexión, verificar:
 
 1. **Firewall del servidor PostgreSQL** - Puerto 5432 debe estar abierto
 2. **Configuración pg_hba.conf** - Debe permitir conexiones desde la IP del servidor API
-3. **postgresql.conf** - `listen_addresses` debe incluir la IP o '*'
+3. **postgresql.conf** - `listen_addresses` debe incluir la IP o '\*'
 
 ```bash
 # Verificar si el puerto está abierto desde el servidor API

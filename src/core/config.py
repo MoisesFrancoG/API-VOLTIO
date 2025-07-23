@@ -169,6 +169,75 @@ class Settings:
         """Verifica si el servicio de email está habilitado"""
         return bool(self.smtp_username and self.smtp_password)
 
+    # ============================================
+    # 🌐 CONFIGURACIÓN CORS
+    # ============================================
+    
+    @property
+    def cors_origins(self) -> list[str]:
+        """Obtener orígenes permitidos para CORS según el ambiente"""
+        
+        # Orígenes desde variable de entorno (separados por coma)
+        env_origins = os.getenv("CORS_ORIGINS", "")
+        if env_origins:
+            return [origin.strip() for origin in env_origins.split(",")]
+        
+        # Configuración por defecto según ambiente
+        if self.environment == "development":
+            return [
+                "http://localhost:3000",        # React default
+                "http://localhost:3001",        # React alternate
+                "http://localhost:8080",        # Vue.js default
+                "http://localhost:8081",        # Vue.js alternate
+                "http://localhost:4200",        # Angular default
+                "http://localhost:5000",        # Flask/Python
+                "http://localhost:5173",        # Vite default
+                "http://127.0.0.1:3000",        # localhost alternative
+                "http://127.0.0.1:8080",
+                "http://127.0.0.1:5173",
+                "http://0.0.0.0:3000",          # Docker containers
+                "http://0.0.0.0:8080",
+            ]
+        else:
+            # Producción: Solo dominios específicos
+            return [
+                "https://voltio-dashboard.acstree.xyz",
+                "https://voltio-admin.acstree.xyz", 
+                "https://voltio-mobile.acstree.xyz",
+                "https://dashboard.voltio.com",
+                "https://admin.voltio.com",
+                "https://app.voltio.com",
+            ]
+    
+    @property
+    def cors_allow_credentials(self) -> bool:
+        """Permitir credenciales en CORS"""
+        return os.getenv("CORS_ALLOW_CREDENTIALS", "true").lower() == "true"
+    
+    @property
+    def cors_allow_methods(self) -> list[str]:
+        """Métodos HTTP permitidos en CORS"""
+        methods = os.getenv("CORS_ALLOW_METHODS", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
+        return [method.strip() for method in methods.split(",")]
+    
+    @property
+    def cors_allow_headers(self) -> list[str]:
+        """Headers permitidos en CORS"""
+        headers = os.getenv("CORS_ALLOW_HEADERS", 
+            "Authorization,Content-Type,Accept,Origin,X-Requested-With,Access-Control-Request-Method,Access-Control-Request-Headers")
+        return [header.strip() for header in headers.split(",")]
+    
+    @property
+    def cors_expose_headers(self) -> list[str]:
+        """Headers expuestos en CORS"""
+        headers = os.getenv("CORS_EXPOSE_HEADERS", "X-Total-Count,X-Rate-Limit,X-API-Version")
+        return [header.strip() for header in headers.split(",")]
+    
+    @property
+    def cors_max_age(self) -> int:
+        """Tiempo de cache para preflight requests (segundos)"""
+        return int(os.getenv("CORS_MAX_AGE", "600"))  # 10 minutos por defecto
+
 
 # Instancia global de configuración
 settings = Settings()
