@@ -57,6 +57,59 @@ def test_core_config():
         return False
 
 
+def test_influx_modules():
+    """Test de módulos InfluxDB"""
+    modules_to_test = [
+        ("PZEM", "src.Lecturas_influx_pzem.infrastructure.routers"),
+        ("DHT22", "src.Lecturas_influx_dht22.infrastructure.routers"),
+        ("Light Sensor", "src.Lecturas_influx_light.infrastructure.routers"),
+        ("PIR Sensor", "src.Lecturas_influx_pir.infrastructure.routers"),
+    ]
+
+    passed = 0
+    for name, module_path in modules_to_test:
+        try:
+            __import__(module_path)
+            print(f"✅ Módulo {name} importado correctamente")
+            passed += 1
+        except ImportError as e:
+            print(f"❌ Error importando módulo {name}: {e}")
+        except Exception as e:
+            print(f"❌ Error inesperado en módulo {name}: {e}")
+
+    return passed == len(modules_to_test)
+
+
+def test_routers_registration():
+    """Test de registro de routers en main.py"""
+    try:
+        from main import app
+        # Verificar que los routers estén registrados
+        routes = [route.path for route in app.routes]
+
+        expected_prefixes = [
+            "/api/v1/lecturas-pzem",
+            "/api/v1/lecturas-dht22",
+            "/api/v1/lecturas-light",
+            "/api/v1/lecturas-pir"
+        ]
+
+        found_routes = 0
+        for prefix in expected_prefixes:
+            prefix_found = any(route.startswith(prefix) for route in routes)
+            if prefix_found:
+                found_routes += 1
+                print(f"✅ Router encontrado: {prefix}")
+            else:
+                print(f"❌ Router no encontrado: {prefix}")
+
+        return found_routes == len(expected_prefixes)
+
+    except Exception as e:
+        print(f"❌ Error verificando routers: {e}")
+        return False
+
+
 def test_environment_setup():
     """Verificar configuración del entorno"""
     checks = {
@@ -85,6 +138,8 @@ def run_basic_tests():
         ("Configuración de entorno", test_environment_setup),
         ("Importación FastAPI app", test_fastapi_app_import),
         ("Configuración del core", test_core_config),
+        ("Módulos InfluxDB", test_influx_modules),
+        ("Registro de routers", test_routers_registration),
     ]
 
     passed = 0

@@ -11,6 +11,9 @@ from src.core.config import settings
 from src.Roles.infrastructure.routers import router as roles_router
 from src.Usuarios.infrastructure.routers import router as users_router
 from src.Lecturas_influx_pzem.infrastructure.routers import router as lecturas_router
+from src.Lecturas_influx_dht22.infrastructure.routers import router as lecturas_dht22_router
+from src.Lecturas_influx_light.infrastructure.routers import router as lecturas_light_router
+from src.Lecturas_influx_pir.infrastructure.routers import router as lecturas_pir_router
 from src.Ubicaciones.infrastructure.routers import router as locations_router
 from src.TipoSensores.infrastructure.routers import router as device_types_router
 from src.ComandosIR.infrastructure.routers import router as device_commands_router
@@ -44,6 +47,7 @@ app.add_middleware(
 # 🔧 ENDPOINT PARA VERIFICAR CORS
 # ============================================
 
+
 @app.get("/cors-info")
 def cors_info():
     """Endpoint para verificar configuración de CORS"""
@@ -75,7 +79,10 @@ def startup_event():
 # Incluir los routers
 app.include_router(roles_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
-app.include_router(lecturas_router, prefix="/api/v1/lecturas-pzem")
+app.include_router(lecturas_router, prefix="/api/v1")
+app.include_router(lecturas_dht22_router, prefix="/api/v1")
+app.include_router(lecturas_light_router, prefix="/api/v1")
+app.include_router(lecturas_pir_router, prefix="/api/v1")
 app.include_router(locations_router, prefix="/api/v1")
 app.include_router(device_types_router, prefix="/api/v1")
 app.include_router(device_commands_router, prefix="/api/v1")
@@ -141,25 +148,25 @@ def get_debug_token():
     """
     if settings.environment != "development":
         return {"error": "Este endpoint solo está disponible en modo desarrollo"}
-    
+
     from src.core.auth_middleware import create_access_token
     from src.Usuarios.infrastructure.repositories import UserRepository
     from src.core.db import get_db
-    
+
     # Obtener conexión a la base de datos
     db = next(get_db())
     user_repo = UserRepository(db)
-    
+
     try:
         # Buscar usuario SuperAdmin
         superadmin = user_repo.get_user_by_email("superadmin@voltio.com")
         if not superadmin:
             return {"error": "Usuario SuperAdmin no encontrado"}
-        
+
         # Crear token
         token_data = {"sub": superadmin.email, "user_id": superadmin.id}
         access_token = create_access_token(data=token_data)
-        
+
         return {
             "access_token": access_token,
             "token_type": "bearer",
@@ -173,7 +180,7 @@ def get_debug_token():
             "usage": "Authorization: Bearer <access_token>",
             "warning": "⚠️ Solo para desarrollo - NO usar en producción"
         }
-        
+
     except Exception as e:
         return {"error": f"Error generando token: {str(e)}"}
 
@@ -186,37 +193,37 @@ def get_all_test_tokens():
     """
     if settings.environment != "development":
         return {"error": "Este endpoint solo está disponible en modo desarrollo"}
-    
+
     from src.core.auth_middleware import create_access_token
     from src.Usuarios.infrastructure.repositories import UserRepository
     from src.core.db import get_db
-    
+
     # Obtener conexión a la base de datos
     db = next(get_db())
     user_repo = UserRepository(db)
-    
+
     try:
         tokens = {}
-        
+
         # Lista de usuarios de prueba (basado en tus credenciales de test)
         test_users = [
             "superadmin@voltio.com",
-            "admin@voltio.com", 
+            "admin@voltio.com",
             "user@voltio.com",
             "guest@voltio.com"
         ]
-        
+
         for email in test_users:
             user = user_repo.get_user_by_email(email)
             if user:
                 token_data = {"sub": user.email, "user_id": user.id}
                 access_token = create_access_token(data=token_data)
-                
+
                 # Obtener nombre del rol si existe
                 role_name = "Unknown"
                 if hasattr(user, 'role') and user.role:
                     role_name = user.role.name
-                
+
                 tokens[email] = {
                     "access_token": access_token,
                     "token_type": "bearer",
@@ -228,7 +235,7 @@ def get_all_test_tokens():
                         "role_name": role_name
                     }
                 }
-        
+
         return {
             "tokens": tokens,
             "expires_in_minutes": settings.access_token_expire_minutes,
@@ -236,7 +243,7 @@ def get_all_test_tokens():
             "example_curl": "curl -H 'Authorization: Bearer <token>' https://voltioapi.acstree.xyz/api/v1/users/me",
             "warning": "⚠️ Solo para desarrollo - NO usar en producción"
         }
-        
+
     except Exception as e:
         return {"error": f"Error generando tokens: {str(e)}"}
 

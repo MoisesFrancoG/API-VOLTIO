@@ -19,7 +19,8 @@ class InfluxDBLecturaRepository(LecturaRepositoryInterface):
     def get_by_time_range(
         self,
         time_range: TimeRange,
-        mac: str | None = None
+        mac: str | None = None,
+        device_id: str | None = None
     ) -> List[LecturaPZEMResponse]:
 
         # Construcción de la consulta Flux
@@ -34,6 +35,10 @@ class InfluxDBLecturaRepository(LecturaRepositoryInterface):
         if mac:
             # Filtramos por el tag 'mac' en lugar de 'deviceId'
             flux_query += f'  |> filter(fn: (r) => r["mac"] == "{mac}")'
+
+        # Añadimos el filtro por deviceId si se proporciona
+        if device_id:
+            flux_query += f'  |> filter(fn: (r) => r["deviceId"] == "{device_id}")'
 
         # Pivotamos para tener los campos como columnas, lo que facilita el mapeo
         flux_query += '  |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")'
