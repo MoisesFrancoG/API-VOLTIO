@@ -249,7 +249,7 @@ def test_deployment_v2():
         "status": "✅ Despliegue v2 funcionando",
         "message": "Nuevos cambios aplicados correctamente",
         "timestamp": datetime.datetime.now().isoformat(),
-        "version": "1.2.0",  # Nueva versión para ver cambios
+        "version": "1.3.0-cors",  # Nueva versión con CORS configurado
         "user_context": {
             "current_user": os.getenv("USER", "unknown"),
             "home_directory": os.path.expanduser("~"),
@@ -258,16 +258,23 @@ def test_deployment_v2():
         },
         "git_info": {
             "branch": "develop",
-            "last_commit": "Latest deployment changes",
+            "last_commit": "CORS configuration and cleanup",
             "deploy_user": "deploy" if "/home/deploy" in str(Path.cwd()) else "ubuntu"
         },
+        "cors_config": {
+            "enabled": True,
+            "production_domain": "https://voltio.acstree.xyz",
+            "development_domains": ["http://localhost:3000", "http://localhost:5173", "http://localhost:4200"],
+            "credentials_allowed": True,
+            "verification_endpoint": "/cors-info"
+        },
         "deployment_features": [
-            "🆕 Nuevos endpoints de prueba",
-            "👤 Configurado para usuario deploy",
-            "📂 Directorio /home/deploy/API-VOLTIO",
-            "🔄 GitHub Actions mejorado",
-            "🧪 Tests actualizados",
-            "📋 Documentación completa"
+            "� CORS configurado para producción",
+            "🎯 Dominio frontend: https://voltio.acstree.xyz",
+            "� Utilidades de configuración CORS",
+            "🧪 Tests optimizados y limpieza completada",
+            "📋 Documentación frontend actualizada",
+            "� GitHub Actions corregido para nuevos tests"
         ]
     }
 
