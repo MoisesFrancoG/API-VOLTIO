@@ -24,7 +24,6 @@ class SQLAlchemyDeviceRepository(DeviceRepository):
             id=model.id,
             name=model.name,
             device_type_id=model.device_type_id,
-            location_id=model.location_id,
             user_id=model.user_id,
             is_active=model.is_active,
             mac_address=getattr(model, 'mac_address', None),
@@ -37,7 +36,6 @@ class SQLAlchemyDeviceRepository(DeviceRepository):
         device_model = DeviceModel(
             name=device.name,
             device_type_id=device.device_type_id,
-            location_id=device.location_id,
             user_id=device.user_id,
             is_active=device.is_active,
             mac_address=getattr(device, 'mac_address', None),
@@ -82,13 +80,12 @@ class SQLAlchemyDeviceRepository(DeviceRepository):
 
         return [self._model_to_entity(model) for model in device_models]
 
-    def get_devices_by_location(self, location_id: int) -> List[Device]:
-        """Gets devices by location"""
-        device_models = self.session.query(DeviceModel).filter(
-            DeviceModel.location_id == location_id
-        ).order_by(DeviceModel.name).all()
-
-        return [self._model_to_entity(model) for model in device_models]
+    # def get_devices_by_location(self, location_id: int) -> List[Device]:
+    #     """Gets devices by location"""
+    #     device_models = self.session.query(DeviceModel).filter(
+    #         DeviceModel.location_id == location_id
+    #     ).order_by(DeviceModel.name).all()
+    #     return [self._model_to_entity(model) for model in device_models]
 
     def get_devices_by_user(self, user_id: int) -> List[Device]:
         """Gets devices by user"""
@@ -119,8 +116,6 @@ class SQLAlchemyDeviceRepository(DeviceRepository):
             device_model.name = device.name
         if device.device_type_id is not None:
             device_model.device_type_id = device.device_type_id
-        if device.location_id is not None:
-            device_model.location_id = device.location_id
         if device.user_id is not None:
             device_model.user_id = device.user_id
         if device.is_active is not None:
@@ -168,12 +163,12 @@ class SQLAlchemyDeviceRepository(DeviceRepository):
         ).scalar()
         return count or 0
 
-    def count_devices_by_location(self, location_id: int) -> int:
-        """Counts devices by location"""
-        count = self.session.query(func.count(DeviceModel.id)).filter(
-            DeviceModel.location_id == location_id
-        ).scalar()
-        return count or 0
+    # def count_devices_by_location(self, location_id: int) -> int:
+    #     """Counts devices by location"""
+    #     count = self.session.query(func.count(DeviceModel.id)).filter(
+    #         DeviceModel.location_id == location_id
+    #     ).scalar()
+    #     return count or 0
 
     def count_devices_by_user(self, user_id: int) -> int:
         """Counts devices by user"""

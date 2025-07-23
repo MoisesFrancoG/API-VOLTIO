@@ -19,8 +19,6 @@ class DeviceModel(Base):
     name = Column(String(100), nullable=True, index=True)
     device_type_id = Column(Integer, nullable=True,
                             index=True)  # FK to device_types
-    location_id = Column(Integer, nullable=True,
-                         index=True)     # FK to locations
     user_id = Column(Integer, nullable=True, index=True)         # FK to users
     is_active = Column(Boolean, default=True, nullable=True, index=True)
     mac_address = Column(String(17), nullable=False,
@@ -41,4 +39,4 @@ class DeviceModel(Base):
 
     def __repr__(self):
         status = "Active" if self.is_active else "Inactive"
-        return f"<DeviceModel(id={self.id}, name='{self.name}', type={self.device_type_id}, location={self.location_id}, user={self.user_id}, status={status})>"
+        return f"<DeviceModel(id={self.id}, name='{self.name}', type={self.device_type_id}, user={self.user_id}, status={status})>"

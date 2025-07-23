@@ -2,9 +2,11 @@
 Modelos de base de datos para User (SQLAlchemy)
 """
 
+
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from src.core.db import Base
+from src.Roles.infrastructure.models import RoleModel
 
 
 class UserModel(Base):
@@ -19,6 +21,8 @@ class UserModel(Base):
     # Relación con la tabla roles
     role = relationship("RoleModel", back_populates="users")
 
+    # Relación con reglas de automatización
+    automation_rules = relationship("AutomationRuleModel", back_populates="user")
     # Relación con notificaciones
     notifications = relationship("NotificationModel", back_populates="user")
 

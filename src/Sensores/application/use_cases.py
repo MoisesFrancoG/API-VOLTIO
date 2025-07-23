@@ -32,9 +32,6 @@ class DeviceUseCases:
         if device_data.device_type_id <= 0:
             raise ValueError("Device type ID must be a positive number")
 
-        if device_data.location_id <= 0:
-            raise ValueError("Location ID must be a positive number")
-
         if device_data.user_id <= 0:
             raise ValueError("User ID must be a positive number")
 
@@ -62,12 +59,7 @@ class DeviceUseCases:
 
         return self.repository.get_devices_by_type(device_type_id)
 
-    def get_devices_by_location(self, location_id: int) -> List[Device]:
-        """Gets devices by location"""
-        if location_id <= 0:
-            raise ValueError("Location ID must be a positive number")
-
-        return self.repository.get_devices_by_location(location_id)
+    # Eliminado get_devices_by_location porque location_id ya no existe
 
     def get_devices_by_user(self, user_id: int) -> List[Device]:
         """Gets devices by user"""
@@ -109,9 +101,6 @@ class DeviceUseCases:
         # Additional validations
         if device_data.device_type_id is not None and device_data.device_type_id <= 0:
             raise ValueError("Device type ID must be a positive number")
-
-        if device_data.location_id is not None and device_data.location_id <= 0:
-            raise ValueError("Location ID must be a positive number")
 
         if device_data.user_id is not None and device_data.user_id <= 0:
             raise ValueError("User ID must be a positive number")
@@ -257,9 +246,9 @@ class DeviceUseCases:
         if device.user_id != user_id:
             raise ValueError("Access denied - device not owned by user")
 
-        # Verify device type (using ID 5 for NODO_CONTROL_PZEM)
+        # Verify device type (using ID 1 for NODO_CONTROL_PZEM)
         # We validate by ID for better performance as requested
-        if device.device_type_id != 5:  # NODO_CONTROL_PZEM
+        if device.device_type_id != 1:  # NODO_CONTROL_PZEM
             raise ValueError(
                 "Operation not allowed - this command is only applicable to 'NODO_CONTROL_PZEM' devices"
             )

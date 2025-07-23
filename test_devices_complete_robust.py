@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 # Configuración
-BASE_URL = "http://localhost:8000/api/v1"
+BASE_URL = "https://voltioapi.acstree.xyz/api/v1"
 
 # Usuarios de prueba
 TEST_USERS = {

@@ -7,17 +7,10 @@ Prueba permisos y funcionalidad para Admin, User y usuarios no autenticados
 import requests
 import json
 from datetime import datetime
-from        # 8. TEST: GET /devices/search (Buscar dispositivos)
-        print("\n🔍 8. TESTING: GET /devices/search?name=test")
-        print("-" * 50)
-        for user_key in authenticated_users:
-            result = self.test_endpoint(user_key, "GET", "/devices/search/?name=test")
-            status = "✅" if result["success"] else "❌"
-            count = len(result["response_data"]) if result["response_data"] and isinstance(result["response_data"], list) else "N/A"
-            print(f"{status} {result['user']}: Status {result['actual_status']} | Found: {count}")import Dict, List, Optional
+from typing import Dict, List, Optional
 
 # Configuración
-BASE_URL = "http://localhost:8000/api/v1"
+BASE_URL = "https://voltioapi.acstree.xyz/api/v1"
 
 # Usuarios de prueba con diferentes roles
 TEST_USERS = {

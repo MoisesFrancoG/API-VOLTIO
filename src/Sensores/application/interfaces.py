@@ -37,10 +37,6 @@ class DeviceRepository(ABC):
         """Gets devices by type"""
         pass
 
-    @abstractmethod
-    def get_devices_by_location(self, location_id: int) -> List[Device]:
-        """Gets devices by location"""
-        pass
 
     @abstractmethod
     def get_devices_by_user(self, user_id: int) -> List[Device]:
@@ -72,10 +68,6 @@ class DeviceRepository(ABC):
         """Counts devices by type"""
         pass
 
-    @abstractmethod
-    def count_devices_by_location(self, location_id: int) -> int:
-        """Counts devices by location"""
-        pass
 
     @abstractmethod
     def count_devices_by_user(self, user_id: int) -> int:

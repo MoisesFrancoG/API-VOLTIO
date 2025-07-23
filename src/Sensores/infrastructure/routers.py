@@ -33,7 +33,6 @@ def create_device(
             def __init__(self, device_create, user_id):
                 self.name = device_create.name
                 self.device_type_id = device_create.device_type_id
-                self.location_id = device_create.location_id
                 self.user_id = user_id  # ✅ Tomado automáticamente del token
                 self.is_active = device_create.is_active
                 self.mac_address = device_create.mac_address
@@ -46,7 +45,6 @@ def create_device(
             id=created_device.id,
             name=created_device.name,
             device_type_id=created_device.device_type_id,
-            location_id=created_device.location_id,
             user_id=created_device.user_id,
             is_active=created_device.is_active,
             mac_address=getattr(created_device, 'mac_address', None),
@@ -76,7 +74,6 @@ def get_device(
             id=device.id,
             name=device.name,
             device_type_id=device.device_type_id,
-            location_id=device.location_id,
             user_id=device.user_id,
             is_active=device.is_active,
             mac_address=getattr(device, 'mac_address', None),
@@ -111,7 +108,6 @@ def get_all_devices(
                 id=device.id,
                 name=device.name,
                 device_type_id=device.device_type_id,
-                location_id=device.location_id,
                 user_id=device.user_id,
                 is_active=device.is_active,
                 mac_address=getattr(device, 'mac_address', None),
@@ -139,7 +135,6 @@ def get_devices_by_type(
                 id=device.id,
                 name=device.name,
                 device_type_id=device.device_type_id,
-                location_id=device.location_id,
                 user_id=device.user_id,
                 is_active=device.is_active
             )
@@ -166,7 +161,6 @@ def get_devices_by_location(
                 id=device.id,
                 name=device.name,
                 device_type_id=device.device_type_id,
-                location_id=device.location_id,
                 user_id=device.user_id,
                 is_active=device.is_active
             )
@@ -193,7 +187,6 @@ def get_devices_by_user(
                 id=device.id,
                 name=device.name,
                 device_type_id=device.device_type_id,
-                location_id=device.location_id,
                 user_id=device.user_id,
                 is_active=device.is_active
             )
@@ -220,7 +213,6 @@ def search_devices_by_name(
                 id=device.id,
                 name=device.name,
                 device_type_id=device.device_type_id,
-                location_id=device.location_id,
                 user_id=device.user_id,
                 is_active=device.is_active,
                 mac_address=getattr(device, 'mac_address', None),
