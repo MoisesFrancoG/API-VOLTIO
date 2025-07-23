@@ -160,10 +160,11 @@ Content-Type: application/json
 {
     "username": "juanperez",
     "email": "juan@empresa.com",
-    "password": "MiPassword123!",
-    "role_id": 2
+    "password": "MiPassword123!"
 }
 ```
+
+**⚠️ Importante:** Ya NO se requiere `role_id` en el request. Todos los usuarios registrados públicamente reciben automáticamente el rol "User" (ID=2).
 
 **Respuesta:**
 
@@ -182,7 +183,8 @@ Content-Type: application/json
 
 - Formulario de registro de nuevos usuarios
 - Validación de email único
-- Asignación automática de rol básico
+- **Seguridad mejorada**: No permite elevar privilegios durante registro
+- Solo administradores pueden crear usuarios con otros roles usando `/users/`
 
 ### 🔐 Login de Usuario
 

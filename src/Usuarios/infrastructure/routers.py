@@ -10,6 +10,7 @@ from src.core.db import get_database
 from src.core.auth_middleware import get_current_user, require_admin, require_any_authenticated
 from src.Usuarios.domain.schemas import (
     UserCreate,
+    UserRegister,
     UserUpdate,
     UserResponse,
     UserLogin,
@@ -110,11 +111,28 @@ def obtener_usuario_por_email(
     response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Registrar nuevo usuario",
-    description="Crea un nuevo usuario en el sistema (endpoint público)"
+    description="Crea un nuevo usuario regular en el sistema (endpoint público). Todos los usuarios registrados tienen rol 'User' por defecto."
 )
-def registrar_usuario(usuario: UserCreate, use_cases: UserUseCases = Depends(get_use_cases)):
-    """Registrar un nuevo usuario (público)"""
-    return use_cases.crear_usuario(usuario)
+def registrar_usuario(usuario_data: UserRegister, use_cases: UserUseCases = Depends(get_use_cases)):
+    """
+    Registrar un nuevo usuario (público)
+    
+    - **username**: Nombre de usuario único
+    - **email**: Email válido del usuario  
+    - **password**: Contraseña (mínimo 6 caracteres)
+    
+    Todos los usuarios registrados públicamente reciben automáticamente el rol 'User' (ID=2).
+    Solo los administradores pueden crear usuarios con otros roles usando el endpoint /users/.
+    """
+    # Crear UserCreate con role_id fijo en 2 (User regular)
+    usuario_create = UserCreate(
+        username=usuario_data.username,
+        email=usuario_data.email,
+        password=usuario_data.password,
+        role_id=2  # Siempre rol de usuario regular
+    )
+    
+    return use_cases.crear_usuario(usuario_create)
 
 
 # Endpoints que requieren permisos de administrador

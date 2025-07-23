@@ -21,6 +21,23 @@ class UserCreate(UserBase):
     role_id: int = Field(default=2, gt=0)  # Default: Regular USER role (ID=2)
 
 
+class UserRegister(BaseModel):
+    """Esquema para registro público de usuario (solo usuarios regulares)"""
+    username: str = Field(..., min_length=1, max_length=100, description="Nombre de usuario único")
+    email: EmailStr = Field(..., max_length=100, description="Email del usuario")
+    password: str = Field(..., min_length=6, max_length=255, description="Contraseña (mínimo 6 caracteres)")
+    
+    class Config:
+        from_attributes = True
+        json_schema_extra = {
+            "example": {
+                "username": "juanperez",
+                "email": "juan@ejemplo.com",
+                "password": "mipassword123"
+            }
+        }
+
+
 class UserUpdate(BaseModel):
     """Esquema para actualizar un usuario"""
     username: Optional[str] = Field(None, min_length=1, max_length=100)
