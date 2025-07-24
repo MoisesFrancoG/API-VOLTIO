@@ -77,13 +77,16 @@ class RabbitMQClient:
                 self._setup_connection()
 
             # Construir routing key basado en la MAC
-            routing_key = f"pzem/command/{mac_address}"
+            routing_key = f"pzem.command.{mac_address}"
 
             # Publicar mensaje
+            # Invertir el comando
+            inverted_command = "OFF" if command == "ON" else "ON" if command == "OFF" else command
+
             self.channel.basic_publish(
                 exchange=exchange,
                 routing_key=routing_key,
-                body=command,
+                body=inverted_command,
                 properties=pika.BasicProperties(
                     delivery_mode=2,  # Hacer el mensaje persistente
                     content_type='text/plain',
@@ -92,7 +95,7 @@ class RabbitMQClient:
             )
 
             logger.info(
-                f"📤 Comando '{command}' enviado a dispositivo {mac_address}")
+                f"📤 Comando '{command}' enviado a dispositivo {mac_address} en {routing_key} con exchange {exchange}")
             return True
 
         except AMQPChannelError as e:
