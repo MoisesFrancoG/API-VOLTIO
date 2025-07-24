@@ -58,6 +58,32 @@ def create_device(
             status_code=500, detail=f"Internal server error: {str(e)}")
 
 
+@router.get("/me", response_model=List[DeviceResponse], summary="Get my devices", description="Devuelve los dispositivos del usuario autenticado.")
+def get_my_devices(
+    current_user: UserResponse = Depends(get_current_user),
+    use_cases: DeviceUseCases = Depends(get_device_use_cases)
+):
+    """Devuelve los dispositivos asociados al usuario autenticado."""
+    try:
+        devices = use_cases.get_devices_by_user(current_user.id)
+        return [
+            DeviceResponse(
+                id=device.id,
+                name=device.name,
+                device_type_id=device.device_type_id,
+                user_id=device.user_id,
+                is_active=device.is_active,
+                mac_address=getattr(device, 'mac_address', None),
+                description=getattr(device, 'description', None),
+                created_at=getattr(device, 'created_at', None)
+            )
+            for device in devices
+        ]
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Internal server error: {str(e)}")
+
+
 @router.get("/{device_id}", response_model=DeviceResponse)
 def get_device(
     device_id: int,
