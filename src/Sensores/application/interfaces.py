@@ -37,7 +37,6 @@ class DeviceRepository(ABC):
         """Gets devices by type"""
         pass
 
-
     @abstractmethod
     def get_devices_by_user(self, user_id: int) -> List[Device]:
         """Gets devices by user"""
@@ -67,7 +66,6 @@ class DeviceRepository(ABC):
     def count_devices_by_type(self, device_type_id: int) -> int:
         """Counts devices by type"""
         pass
-
 
     @abstractmethod
     def count_devices_by_user(self, user_id: int) -> int:

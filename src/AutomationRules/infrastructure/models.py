@@ -2,11 +2,13 @@ from sqlalchemy import Column, Integer, String, Boolean, Float, ForeignKey, Time
 from sqlalchemy.orm import relationship
 from src.core.db import Base
 
+
 class AutomationRuleModel(Base):
     __tablename__ = "automation_rules"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"),
+                     nullable=False, index=True)
     name = Column(String(100), nullable=False)
     trigger_device_id = Column(Integer, nullable=False)
     action_device_id = Column(Integer, nullable=False)

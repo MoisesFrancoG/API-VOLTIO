@@ -59,7 +59,8 @@ class RabbitMQClient:
         self,
         mac_address: str,
         command: str,
-        exchange: str = "amq.topic"
+        exchange: str = "amq.topic",
+        command_type: str = "relay"  # "relay" o "ir"
     ) -> bool:
         """
         Publica un comando a un dispositivo específico
@@ -68,6 +69,7 @@ class RabbitMQClient:
             mac_address: Dirección MAC del dispositivo
             command: Comando a enviar ("ON" o "OFF")
             exchange: Exchange de RabbitMQ (por defecto "amq.topic")
+            command_type: "relay" para relé, "ir" para IR
 
         Returns:
             bool: True si se publicó exitosamente, False en caso contrario
@@ -76,12 +78,21 @@ class RabbitMQClient:
             if not self.channel:
                 self._setup_connection()
 
-            # Construir routing key basado en la MAC
-            routing_key = f"pzem.command.{mac_address}"
+            # Construir routing key según tipo de comando
+            if command_type == "relay":
+                routing_key = f"pzem.command.{mac_address}"
+            elif command_type == "ir":
+                routing_key = f"ir.command.{mac_address}"
+            else:
+                logger.error(f"❌ Tipo de comando desconocido: {command_type}")
+                return False
 
             # Publicar mensaje
-            # Invertir el comando
-            inverted_command = "OFF" if command == "ON" else "ON" if command == "OFF" else command
+            # Invertir el comando para relay, para IR se envía tal cual
+            if command_type == "relay":
+                inverted_command = "OFF" if command == "ON" else "ON" if command == "OFF" else command
+            else:
+                inverted_command = command
 
             self.channel.basic_publish(
                 exchange=exchange,
@@ -147,7 +158,26 @@ def publish_relay_command(mac_address: str, action: str) -> bool:
     """
     try:
         client = get_rabbitmq_client()
-        return client.publish_device_command(mac_address, action)
+        return client.publish_device_command(mac_address, action, command_type="relay")
     except Exception as e:
         logger.error(f"❌ Error al enviar comando de relé: {e}")
+        return False
+
+
+def publish_ir_command(mac_address: str, action: str) -> bool:
+    """
+    Función helper para publicar comandos IR
+
+    Args:
+        mac_address: Dirección MAC del dispositivo
+        action: Acción a realizar ("ON" o "OFF")
+
+    Returns:
+        bool: True si se envió exitosamente
+    """
+    try:
+        client = get_rabbitmq_client()
+        return client.publish_device_command(mac_address, action, command_type="ir")
+    except Exception as e:
+        logger.error(f"❌ Error al enviar comando IR: {e}")
         return False

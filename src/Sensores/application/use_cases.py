@@ -10,6 +10,47 @@ from ..domain.schemas import DeviceCreate, DeviceUpdate, DeviceBase
 
 
 class DeviceUseCases:
+    def validate_ir_command_permissions(self, mac_address: str, user_id: int) -> dict:
+        """
+        Validates if a user can send IR commands to a device
+
+        Args:
+            mac_address: MAC address of the device
+            user_id: ID of the user requesting the command
+
+        Returns:
+            dict: Validation result with device info and permissions
+
+        Raises:
+            ValueError: If validation fails
+        """
+        # Get device with type information
+        device_info = self.repository.get_device_with_type_by_mac(mac_address)
+
+        print(device_info)
+
+        if not device_info:
+            raise ValueError("Device not found")
+
+        device = device_info['device']
+        type_name = device_info['type_name']
+
+        # Verify ownership
+        if device.user_id != user_id:
+            raise ValueError("Access denied - device not owned by user")
+
+        # Verify device type (using ID 2 for NODO_CONTROL_IR)
+        print(device.device_type_id)
+        if device.device_type_id != 3:  # NODO_CONTROL_IR
+            raise ValueError(
+                "Operation not allowed - this command is only applicable to 'NODO_CONTROL_IR' devices"
+            )
+
+        return {
+            'device': device,
+            'type_name': type_name,
+            'can_control_ir': True
+        }
     """Use cases for Device operations"""
 
     def __init__(self, repository: DeviceRepository):

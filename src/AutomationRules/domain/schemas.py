@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 
+
 class AutomationRuleBase(BaseModel):
     name: str = Field(..., max_length=100)
     trigger_device_id: int
@@ -14,11 +15,14 @@ class AutomationRuleBase(BaseModel):
     active_time_end: str    # Format: HH:MM:SS
     is_active: bool = True
 
+
 class AutomationRuleCreate(AutomationRuleBase):
     pass
 
+
 class AutomationRuleUpdate(AutomationRuleBase):
     pass
+
 
 class AutomationRuleResponse(AutomationRuleBase):
     id: int

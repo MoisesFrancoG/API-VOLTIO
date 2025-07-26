@@ -22,7 +22,8 @@ class UserModel(Base):
     role = relationship("RoleModel", back_populates="users")
 
     # Relación con reglas de automatización
-    automation_rules = relationship("AutomationRuleModel", back_populates="user")
+    automation_rules = relationship(
+        "AutomationRuleModel", back_populates="user")
     # Relación con notificaciones
     notifications = relationship("NotificationModel", back_populates="user")
 

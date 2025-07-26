@@ -8,14 +8,14 @@ import psutil
 from sqlalchemy import text
 from src.core.db import engine, Base
 from src.core.config import settings
-## from src.Roles.infrastructure.routers import router as roles_router
+# from src.Roles.infrastructure.routers import router as roles_router
 from src.Usuarios.infrastructure.routers import router as users_router
 from src.Lecturas_influx_pzem.infrastructure.routers import router as lecturas_router
 from src.Lecturas_influx_dht22.infrastructure.routers import router as lecturas_dht22_router
 from src.Lecturas_influx_light.infrastructure.routers import router as lecturas_light_router
 from src.Lecturas_influx_pir.infrastructure.routers import router as lecturas_pir_router
-## from src.Ubicaciones.infrastructure.routers import router as locations_router
-## from src.TipoSensores.infrastructure.routers import router as device_types_router
+# from src.Ubicaciones.infrastructure.routers import router as locations_router
+# from src.TipoSensores.infrastructure.routers import router as device_types_router
 from src.ComandosIR.infrastructure.routers import router as device_commands_router
 from src.Sensores.infrastructure.routers import router as devices_router
 from src.Notifications.infrastructure.routers import router as notifications_router
@@ -78,14 +78,14 @@ def startup_event():
 
 
 # Incluir los routers
-## app.include_router(roles_router, prefix="/api/v1")
+# app.include_router(roles_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
 app.include_router(lecturas_router, prefix="/api/v1")
 app.include_router(lecturas_dht22_router, prefix="/api/v1")
 app.include_router(lecturas_light_router, prefix="/api/v1")
 app.include_router(lecturas_pir_router, prefix="/api/v1")
-## app.include_router(locations_router, prefix="/api/v1")
-## app.include_router(device_types_router, prefix="/api/v1")
+# app.include_router(locations_router, prefix="/api/v1")
+# app.include_router(device_types_router, prefix="/api/v1")
 app.include_router(device_commands_router, prefix="/api/v1")
 app.include_router(devices_router, prefix="/api/v1")
 app.include_router(notifications_router, prefix="/api/v1")
