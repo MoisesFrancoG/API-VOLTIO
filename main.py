@@ -86,11 +86,13 @@ app.include_router(lecturas_light_router, prefix="/api/v1")
 app.include_router(lecturas_pir_router, prefix="/api/v1")
 # app.include_router(locations_router, prefix="/api/v1")
 # app.include_router(device_types_router, prefix="/api/v1")
+
+# Automation Rules endpoints
+app.include_router(automation_rules_router)
 app.include_router(device_commands_router, prefix="/api/v1")
 app.include_router(devices_router, prefix="/api/v1")
 app.include_router(notifications_router, prefix="/api/v1")
 app.include_router(notification_service_router)
-app.include_router(automation_rules_router)
 
 
 @app.on_event("shutdown")

@@ -8,11 +8,13 @@ from datetime import datetime
 
 
 class DeviceBase(BaseModel):
-    name: str = Field(..., min_length=3, max_length=100, description="Device name")
+    name: str = Field(..., min_length=3, max_length=100,
+                      description="Device name")
     device_type_id: int = Field(..., gt=0, description="Device type ID")
     user_id: int = Field(..., gt=0, description="Owner user ID")
     is_active: bool = Field(True, description="Device active status")
-    mac_address: str = Field(..., min_length=12, max_length=17, description="MAC address of the device")
+    mac_address: str = Field(..., min_length=12, max_length=17,
+                             description="MAC address of the device")
     description: Optional[str] = Field(None, description="Device description")
 
     @validator('name')
@@ -50,10 +52,12 @@ class DeviceBase(BaseModel):
 
 class DeviceCreate(BaseModel):
     """Schema for creating a new device - user_id taken from auth"""
-    name: str = Field(..., min_length=3, max_length=100, description="Device name")
+    name: str = Field(..., min_length=3, max_length=100,
+                      description="Device name")
     device_type_id: int = Field(..., gt=0, description="Device type ID")
     is_active: bool = Field(True, description="Device active status")
-    mac_address: str = Field(..., min_length=12, max_length=17, description="MAC address of the device")
+    mac_address: str = Field(..., min_length=12, max_length=17,
+                             description="MAC address of the device")
     description: Optional[str] = Field(None, description="Device description")
 
     @validator('name')
@@ -68,7 +72,7 @@ class DeviceCreate(BaseModel):
             raise ValueError('MAC address cannot be empty')
 
         # Remover separadores y convertir a mayúsculas
-        clean_mac = v.strip().replace(':', '').replace('-', '').replace(' ', '').upper()
+        clean_mac = v.strip().replace(':', '').replace('-', '').replace(' ', '')
 
         # Validar longitud
         if len(clean_mac) != 12:
@@ -91,11 +95,14 @@ class DeviceCreate(BaseModel):
 
 class DeviceUpdate(BaseModel):
     """Schema for updating a device"""
-    name: str | None = Field(None, min_length=3, max_length=100, description="Device name")
-    device_type_id: int | None = Field(None, gt=0, description="Device type ID")
+    name: str | None = Field(
+        None, min_length=3, max_length=100, description="Device name")
+    device_type_id: int | None = Field(
+        None, gt=0, description="Device type ID")
     user_id: int | None = Field(None, gt=0, description="Owner user ID")
     is_active: bool | None = Field(None, description="Device active status")
-    mac_address: str | None = Field(None, min_length=12, max_length=17, description="MAC address")
+    mac_address: str | None = Field(
+        None, min_length=12, max_length=17, description="MAC address")
     description: str | None = Field(None, description="Device description")
 
     @validator('name')
