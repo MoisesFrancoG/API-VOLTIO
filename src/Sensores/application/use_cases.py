@@ -10,7 +10,7 @@ from ..domain.schemas import DeviceCreate, DeviceUpdate, DeviceBase
 
 
 class DeviceUseCases:
-    def validate_ir_command_permissions(self, mac_address: str, user_id: int) -> dict:
+    def validate_ir_command_permissions(self, mac_address: str) -> dict:
         """
         Validates if a user can send IR commands to a device
 
@@ -35,9 +35,7 @@ class DeviceUseCases:
         device = device_info['device']
         type_name = device_info['type_name']
 
-        # Verify ownership
-        if device.user_id != user_id:
-            raise ValueError("Access denied - device not owned by user")
+        # No ownership validation for public endpoint
 
         # Verify device type (using ID 2 for NODO_CONTROL_IR)
         print(device.device_type_id)
@@ -260,7 +258,7 @@ class DeviceUseCases:
             }
         }
 
-    def validate_relay_command_permissions(self, mac_address: str, user_id: int) -> dict:
+    def validate_relay_command_permissions(self, mac_address: str) -> dict:
         """
         Validates if a user can send relay commands to a device
 
@@ -283,9 +281,7 @@ class DeviceUseCases:
         device = device_info['device']
         type_name = device_info['type_name']
 
-        # Verify ownership
-        if device.user_id != user_id:
-            raise ValueError("Access denied - device not owned by user")
+        # No ownership validation for public endpoint
 
         # Verify device type (using ID 1 for NODO_CONTROL_PZEM)
         # We validate by ID for better performance as requested

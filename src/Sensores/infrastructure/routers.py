@@ -355,7 +355,6 @@ def delete_device(
 def send_relay_command(
     mac_address: str,
     command: RelayCommandRequest,
-    current_user: UserResponse = Depends(get_current_user),
     use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
     """
@@ -369,13 +368,11 @@ def send_relay_command(
     try:
         # FASE 1: VALIDACIÓN Y SEGURIDAD
         logger.info(
-            f"🔍 User {current_user.id} requesting relay command '{command.action}' for device {mac_address}")
+            f"🔍 Requesting relay command '{command.action}' for device {mac_address}")
 
         # FASE 2: VERIFICACIÓN DE LÓGICA DE NEGOCIO
         validation_result = use_cases.validate_relay_command_permissions(
-            mac_address=mac_address,
-            user_id=current_user.id
-        )
+            mac_address)
 
         device = validation_result['device']
         logger.info(
@@ -449,7 +446,6 @@ def send_relay_command(
 def send_ir_command(
     mac_address: str,
     command: RelayCommandRequest,
-    current_user: UserResponse = Depends(get_current_user),
     use_cases: DeviceUseCases = Depends(get_device_use_cases)
 ):
     """
@@ -463,13 +459,11 @@ def send_ir_command(
     try:
         # FASE 1: VALIDACIÓN Y SEGURIDAD
         logger.info(
-            f"🔍 User {current_user.id} requesting IR command '{command.action}' for device {mac_address}")
+            f"🔍 Requesting IR command '{command.action}' for device {mac_address}")
 
         # FASE 2: VERIFICACIÓN DE LÓGICA DE NEGOCIO
         validation_result = use_cases.validate_ir_command_permissions(
-            mac_address=mac_address,
-            user_id=current_user.id
-        )
+            mac_address)
 
         device = validation_result['device']
         logger.info(
