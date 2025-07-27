@@ -19,7 +19,7 @@ class AutomationRuleBase(BaseModel):
     @validator('trigger_metric')
     def validate_trigger_metric(cls, v):
         allowed = ["motion", "temperature", "humidity", "lux", "voltage", "current",
-                   "power", "energy", "frequency", "pf", "workday_start", "workday_end"]
+                   "power", "energy", "frequency", "pf", "workday_start", "workday_end", "motion_timeout"]
         if v not in allowed:
             raise ValueError(f"trigger_metric debe ser uno de: {allowed}")
         return v
