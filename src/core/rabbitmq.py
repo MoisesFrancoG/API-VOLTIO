@@ -75,7 +75,9 @@ class RabbitMQClient:
             bool: True si se publicó exitosamente, False en caso contrario
         """
         try:
-            if not self.channel:
+            # Reconexión automática si la conexión o canal está cerrada
+            if not self.connection or self.connection.is_closed or not self.channel or self.channel.is_closed:
+                logger.warning("🔄 RabbitMQ connection/channel closed, reconnecting...")
                 self._setup_connection()
 
             # Construir routing key según tipo de comando
@@ -111,10 +113,44 @@ class RabbitMQClient:
 
         except AMQPChannelError as e:
             logger.error(f"❌ Error de canal RabbitMQ: {e}")
-            return False
+            # Intentar reconectar y reintentar una vez
+            try:
+                self._setup_connection()
+                self.channel.basic_publish(
+                    exchange=exchange,
+                    routing_key=routing_key,
+                    body=inverted_command,
+                    properties=pika.BasicProperties(
+                        delivery_mode=2,
+                        content_type='text/plain',
+                        timestamp=int(os.urandom(4).hex(), 16)
+                    )
+                )
+                logger.info(f"📤 Comando '{command}' enviado tras reconexión a {mac_address}")
+                return True
+            except Exception as e2:
+                logger.error(f"❌ Error tras reconexión: {e2}")
+                return False
         except Exception as e:
             logger.error(f"❌ Error al publicar comando: {e}")
-            return False
+            # Intentar reconectar y reintentar una vez
+            try:
+                self._setup_connection()
+                self.channel.basic_publish(
+                    exchange=exchange,
+                    routing_key=routing_key,
+                    body=inverted_command,
+                    properties=pika.BasicProperties(
+                        delivery_mode=2,
+                        content_type='text/plain',
+                        timestamp=int(os.urandom(4).hex(), 16)
+                    )
+                )
+                logger.info(f"📤 Comando '{command}' enviado tras reconexión a {mac_address}")
+                return True
+            except Exception as e2:
+                logger.error(f"❌ Error tras reconexión: {e2}")
+                return False
 
     def close(self):
         """Cerrar conexión a RabbitMQ"""
