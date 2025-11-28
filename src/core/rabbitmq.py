@@ -77,7 +77,8 @@ class RabbitMQClient:
         try:
             # Reconexión automática si la conexión o canal está cerrada
             if not self.connection or self.connection.is_closed or not self.channel or self.channel.is_closed:
-                logger.warning("🔄 RabbitMQ connection/channel closed, reconnecting...")
+                logger.warning(
+                    "🔄 RabbitMQ connection/channel closed, reconnecting...")
                 self._setup_connection()
 
             # Construir routing key según tipo de comando
@@ -126,7 +127,8 @@ class RabbitMQClient:
                         timestamp=int(os.urandom(4).hex(), 16)
                     )
                 )
-                logger.info(f"📤 Comando '{command}' enviado tras reconexión a {mac_address}")
+                logger.info(
+                    f"📤 Comando '{command}' enviado tras reconexión a {mac_address}")
                 return True
             except Exception as e2:
                 logger.error(f"❌ Error tras reconexión: {e2}")
@@ -146,7 +148,8 @@ class RabbitMQClient:
                         timestamp=int(os.urandom(4).hex(), 16)
                     )
                 )
-                logger.info(f"📤 Comando '{command}' enviado tras reconexión a {mac_address}")
+                logger.info(
+                    f"📤 Comando '{command}' enviado tras reconexión a {mac_address}")
                 return True
             except Exception as e2:
                 logger.error(f"❌ Error tras reconexión: {e2}")
