@@ -8,6 +8,20 @@ import psutil
 from sqlalchemy import text
 from src.core.db import engine, Base
 from src.core.config import settings
+
+# Import all models to ensure they're registered with Base.metadata
+from src.Roles.infrastructure.models import RoleModel
+from src.Usuarios.infrastructure.models import UserModel
+from src.TipoSensores.infrastructure.models import DeviceTypeModel
+from src.Ubicaciones.infrastructure.models import LocationModel
+from src.Sensores.infrastructure.models import DeviceModel
+from src.Notifications.infrastructure.models import NotificationModel
+from src.DeviceCapabilities.infrastructure.models import DeviceCapabilityModel
+from src.DeviceHasCapability.infrastructure.models import DeviceHasCapabilityModel
+from src.ComandosIR.infrastructure.models import DeviceCommandModel
+from src.AutomationRules.infrastructure.models import AutomationRuleModel
+
+# Import routers
 # from src.Roles.infrastructure.routers import router as roles_router
 from src.Usuarios.infrastructure.routers import router as users_router
 from src.Lecturas_influx_pzem.infrastructure.routers import router as lecturas_router
@@ -70,7 +84,7 @@ def startup_event():
     """Crear las tablas de la base de datos al iniciar la aplicación"""
     print("📋 Creando tablas de base de datos...")
     try:
-        Base.metadata.create_all(bind=engine)
+        # Base.metadata.create_all(bind=engine)
         print("✅ Tablas creadas exitosamente")
     except Exception as e:
         print(f"❌ Error creando tablas: {e}")

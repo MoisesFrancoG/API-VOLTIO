@@ -1,0 +1,78 @@
+# Python cache y archivos compilados
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# Archivos de entorno (CRÍTICO - No incluir en imagen)
+.env
+.env.local
+.env.*.local
+
+# IDE y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentación y archivos markdown
+*.md
+docs/
+README.md
+
+# Scripts de deployment
+scripts/
+*.sh
+*.ps1
+
+# Archivos de configuración local
+configs/nginx*.conf
+configs/supervisor.conf
+
+# SSH Keys (CRÍTICO - NUNCA incluir en imagen)
+*.pem
+*.key
+voltioBD.pem
+
+# Tests
+tests/
+test_*.py
+pytest.ini
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# Logs
+*.log
+logs/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (no necesarios dentro de la imagen)
+Dockerfile
+.dockerignore
+docker-compose.yml

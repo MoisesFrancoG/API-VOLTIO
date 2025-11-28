@@ -15,17 +15,18 @@ class DeviceModel(Base):
     __tablename__ = "devices"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    # Puede ser nullable según BD
     name = Column(String(100), nullable=True, index=True)
-    device_type_id = Column(Integer, nullable=True,
-                            index=True)  # FK to device_types
-    user_id = Column(Integer, nullable=True, index=True)         # FK to users
+    device_type_id = Column(Integer, ForeignKey(
+        "device_types.id"), nullable=True, index=True)
+    user_id = Column(Integer, ForeignKey(
+        "users.id", ondelete="CASCADE"), nullable=False, index=True)
     is_active = Column(Boolean, default=True, nullable=True, index=True)
-    mac_address = Column(String(17), nullable=False,
-                         index=True)  # Campo requerido en BD
+    mac_address = Column(String(17), nullable=False, unique=True, index=True)
     description = Column(Text, nullable=True)
+    location_id = Column(Integer, ForeignKey(
+        "locations.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime(timezone=True),
-                        server_default=func.now(), nullable=True)
+                        server_default=func.now(), nullable=False)
 
     # Relationships with other models (when available)
     # device_type = relationship("DeviceTypeModel", back_populates="devices")
