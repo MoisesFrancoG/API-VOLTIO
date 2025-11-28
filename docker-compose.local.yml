@@ -1,0 +1,145 @@
+# ==============================================================================
+# DOCKER COMPOSE LOCAL - API VOLTIO CON BASE DE DATOS EXISTENTE
+# Usa PostgreSQL local de tu máquina (sin contenedor de PostgreSQL)
+# ==============================================================================
+
+version: "3.8"
+
+services:
+  # ----------------------------------------------------------------------------
+  # InfluxDB - Base de datos de series temporales para sensores
+  # ----------------------------------------------------------------------------
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: voltio-influxdb
+    restart: unless-stopped
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: adminpassword
+      DOCKER_INFLUXDB_INIT_ORG: mi-org
+      DOCKER_INFLUXDB_INIT_BUCKET: sensores
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: my-super-secret-auth-token
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+      - influxdb_config:/etc/influxdb2
+    ports:
+      - "8086:8086"
+    networks:
+      - voltio-network
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # RabbitMQ - Message Broker para comandos IoT
+  # ----------------------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: voltio-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: trike
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672" # AMQP port
+      - "15672:15672" # Management UI
+    networks:
+      - voltio-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # API FastAPI - Aplicación principal
+  # CONECTA A POSTGRESQL LOCAL EN HOST.DOCKER.INTERNAL
+  # ----------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: voltio-api
+    restart: unless-stopped
+    environment:
+      # Database configuration - USA TU POSTGRESQL LOCAL
+      DB_NAME: voltio_db
+      DB_USER: mike
+      DB_PASSWORD: trike
+      DB_HOST: host.docker.internal # ← Conecta a tu máquina local
+      DB_PORT: 5432
+
+      # InfluxDB configuration
+      INFLUX_URL: http://influxdb:8086
+      INFLUX_TOKEN: my-super-secret-auth-token
+      INFLUX_ORG: mi-org
+      INFLUX_BUCKET: sensores
+
+      # RabbitMQ configuration
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: admin
+      RABBITMQ_PASSWORD: trike
+      RABBITMQ_VHOST: /
+
+      # Security
+      SECRET_KEY: N4Z2F0dkQMV3fJRtqFjjKZOYC5WZ0sWDTC1QdaubuPz2108UxSSoVwEo2HeU7WwrH2d0yBWg2hIWP49h33gj1btNQ==
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+
+      # SSH Tunnel - DISABLED
+      SSH_TUNNEL_ENABLED: false
+
+      # Application settings
+      ENVIRONMENT: development
+      DEBUG: true
+
+      # CORS
+      CORS_ORIGINS: https://voltio.acstree.xyz,http://localhost:3000,http://localhost:5173
+      CORS_ALLOW_CREDENTIALS: true
+      CORS_ALLOW_METHODS: GET,POST,PUT,PATCH,DELETE,OPTIONS
+      CORS_MAX_AGE: 3600
+
+      # Uvicorn settings
+      HOST: 0.0.0.0
+      PORT: 8000
+      WORKERS: 1 # 1 worker para desarrollo
+    ports:
+      - "8000:8000"
+    depends_on:
+      influxdb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - voltio-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Permite acceso a localhost
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# ------------------------------------------------------------------------------
+# Volumes - Solo para InfluxDB y RabbitMQ (PostgreSQL está fuera)
+# ------------------------------------------------------------------------------
+volumes:
+  influxdb_data:
+    driver: local
+  influxdb_config:
+    driver: local
+  rabbitmq_data:
+    driver: local
+
+# ------------------------------------------------------------------------------
+# Networks
+# ------------------------------------------------------------------------------
+networks:
+  voltio-network:
+    driver: bridge
