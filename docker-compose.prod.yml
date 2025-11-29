@@ -81,9 +81,13 @@ services:
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+      - ./configs/rabbitmq-plugins.conf:/etc/rabbitmq/enabled_plugins
     ports:
       - "127.0.0.1:5672:5672" # AMQP solo localhost
       - "0.0.0.0:15672:15672" # Management UI accesible externamente
+      - "0.0.0.0:1883:1883" # MQTT
+      - "0.0.0.0:8883:8883" # MQTT over SSL
+      - "0.0.0.0:15675:15675" # MQTT WebSockets
     networks:
       - voltio-network
     healthcheck:
