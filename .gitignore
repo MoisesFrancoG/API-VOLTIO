@@ -1,41 +1,254 @@
-# Entorno virtual Python
-venv/
+# ==============================================================================
+# GITIGNORE - API VOLTIO
+# ==============================================================================
 
-# Cache Python
+# ------------------------------------------------------------------------------
+# Python
+# ------------------------------------------------------------------------------
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# Archivos de configuración sensibles
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# ------------------------------------------------------------------------------
+# Virtual Environments
+# ------------------------------------------------------------------------------
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+virtualenv/
+
+# ------------------------------------------------------------------------------
+# Environment Variables (CRÍTICO - NUNCA SUBIR CREDENCIALES)
+# ------------------------------------------------------------------------------
 .env
-.env.*
-*.env
+.env.local
+.env.*.local
+.env.production
+.env.docker
 
-# Claves SSH y certificados
+# Excepciones: Permitir templates sin credenciales reales
+!.env.example
+!.env.template
+
+# ------------------------------------------------------------------------------
+# SSH Keys y Certificados (CRÍTICO - SEGURIDAD)
+# ------------------------------------------------------------------------------
 *.pem
 *.key
 *.crt
+*.cer
 *.p12
+*.pfx
+id_rsa
+id_rsa.pub
+*.ppk
+voltioBD.pem
 
-# Archivos de base de datos locales
+# Certificados SSL
+nginx/ssl/*.pem
+nginx/ssl/*.key
+nginx/ssl/*.crt
+
+# ------------------------------------------------------------------------------
+# Docker
+# ------------------------------------------------------------------------------
+*.log
+docker-compose.override.yml
+
+# ------------------------------------------------------------------------------
+# IDEs y Editores
+# ------------------------------------------------------------------------------
+# VSCode
+.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# ------------------------------------------------------------------------------
+# Sistema Operativo
+# ------------------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ------------------------------------------------------------------------------
+# Logs y Temporales
+# ------------------------------------------------------------------------------
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+pip-log.txt
+pip-delete-this-directory.txt
+ssh_tunnel.pid
+tunnel.log
+
+# ------------------------------------------------------------------------------
+# Backups y Datos
+# ------------------------------------------------------------------------------
+backups/
+*.sql
+*.dump
+*.bak
+*.backup
 *.db
 *.sqlite
 *.sqlite3
 
-# Logs
-*.log
-logs/
+# ------------------------------------------------------------------------------
+# Configuraciones Locales
+# ------------------------------------------------------------------------------
+configs/local/
+configs/*.local.*
 
-# Archivos temporales del sistema
-.DS_Store
-Thumbs.db
+# ------------------------------------------------------------------------------
+# Jupyter Notebook
+# ------------------------------------------------------------------------------
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+*.ipynb
 
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
+# ------------------------------------------------------------------------------
+# Documentation Build
+# ------------------------------------------------------------------------------
+docs/_build/
+site/
 
-# Archivos específicos del proyecto
-ssh_tunnel.pid
-tunnel.log
+# ------------------------------------------------------------------------------
+# MyPy
+# ------------------------------------------------------------------------------
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ------------------------------------------------------------------------------
+# Pyre type checker
+# ------------------------------------------------------------------------------
+.pyre/
+
+# ------------------------------------------------------------------------------
+# Celery
+# ------------------------------------------------------------------------------
+celerybeat-schedule
+celerybeat.pid
+
+# ------------------------------------------------------------------------------
+# Node (si usas frontend)
+# ------------------------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ------------------------------------------------------------------------------
+# Archivos temporales de aplicación
+# ------------------------------------------------------------------------------
+*.tmp
+*.temp
+tmp/
+temp/
+
+# ------------------------------------------------------------------------------
+# Archivos de proyecto específicos
+# ------------------------------------------------------------------------------
+# Excluir configuraciones de SSH tunnel local
+ssh_tunnel_config.local.json
+
+# Excluir scripts personalizados locales
+scripts/*.local.sh
+scripts/*.local.ps1
