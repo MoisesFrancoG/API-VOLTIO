@@ -83,7 +83,7 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     ports:
       - "127.0.0.1:5672:5672" # AMQP solo localhost
-      - "127.0.0.1:15672:15672" # Management UI solo localhost
+      - "0.0.0.0:15672:15672" # Management UI accesible externamente
     networks:
       - voltio-network
     healthcheck:
