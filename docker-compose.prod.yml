@@ -22,7 +22,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./backups:/backups # Para backups de BD
     ports:
-      - "127.0.0.1:5432:5432" # Solo localhost (seguridad)
+      - "0.0.0.0:5432:5432" # PostgreSQL accesible externamente
     networks:
       - voltio-network
     healthcheck:
