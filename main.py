@@ -48,15 +48,15 @@ app = FastAPI(
 # ============================================
 
 # Configurar CORS Middleware usando configuración centralizada
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=settings.cors_origins,           # Orígenes desde config
-#     allow_credentials=settings.cors_allow_credentials,
-#     allow_methods=settings.cors_allow_methods,     # Métodos permitidos
-#     allow_headers=settings.cors_allow_headers,     # Headers permitidos
-#     expose_headers=settings.cors_expose_headers,   # Headers expuestos
-#     max_age=settings.cors_max_age,                # Cache preflight
-# )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,           # Orígenes desde config
+    allow_credentials=settings.cors_allow_credentials,
+    allow_methods=settings.cors_allow_methods,     # Métodos permitidos
+    allow_headers=settings.cors_allow_headers,     # Headers permitidos
+    expose_headers=settings.cors_expose_headers,   # Headers expuestos
+    max_age=settings.cors_max_age,                # Cache preflight
+)
 
 # ============================================
 # 🔧 ENDPOINT PARA VERIFICAR CORS
