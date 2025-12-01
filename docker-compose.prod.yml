@@ -54,7 +54,7 @@ services:
       - influxdb_data:/var/lib/influxdb2
       - influxdb_config:/etc/influxdb2
     ports:
-      - "127.0.0.1:8086:8086" # Solo localhost
+      - "0.0.0.0:8086:8086" # Accesible externamente
     networks:
       - voltio-network
     healthcheck:
