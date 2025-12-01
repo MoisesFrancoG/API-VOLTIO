@@ -15,7 +15,6 @@ class InfluxDBLecturaRepository(LecturaRepositoryInterface):
     def __init__(self):
         self.query_api = get_influx_query_api()
 
-    # --- CAMBIO EN LA FIRMA DEL MÉTODO ---
     def get_by_time_range(
         self,
         time_range: TimeRange,
@@ -30,18 +29,23 @@ class InfluxDBLecturaRepository(LecturaRepositoryInterface):
           |> filter(fn: (r) => r["_measurement"] == "energy_metrics")
         '''
 
-        # --- CAMBIO EN LA LÓGICA DEL FILTRO ---
-        # Añadimos el filtro por MAC si se proporciona
+        # Añadimos el filtro por MAC si se proporciona (verificar si es tag o field)
         if mac:
-            # Filtramos por el tag 'mac' en lugar de 'deviceId'
-            flux_query += f'  |> filter(fn: (r) => r["mac"] == "{mac}")'
+            flux_query += f'\n  |> filter(fn: (r) => r["mac"] == "{mac}")'
 
         # Añadimos el filtro por deviceId si se proporciona
         if device_id:
-            flux_query += f'  |> filter(fn: (r) => r["deviceId"] == "{device_id}")'
+            flux_query += f'\n  |> filter(fn: (r) => r["deviceId"] == "{device_id}")'
 
-        # Pivotamos para tener los campos como columnas, lo que facilita el mapeo
-        flux_query += '  |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")'
+        # Pivotamos para tener los campos como columnas
+        flux_query += '\n  |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")'
+        flux_query += '\n  |> sort(columns: ["_time"], desc: true)'
+        flux_query += '\n  |> limit(n: 1000)'
+
+        # Log de debugging
+        print(f"[DEBUG] Flux Query: {flux_query}")
+        print(f"[DEBUG] MAC filter: {mac}")
+        print(f"[DEBUG] Device ID filter: {device_id}")
 
         try:
             tables = self.query_api.query(flux_query)
@@ -49,10 +53,14 @@ class InfluxDBLecturaRepository(LecturaRepositoryInterface):
             # Mapeamos los resultados a nuestro esquema Pydantic
             results = []
             for table in tables:
+                print(f"[DEBUG] Processing table with {len(table.records)} records")
                 for record in table.records:
                     try:
                         # Preparamos los datos para el modelo
                         data = record.values.copy()
+                        
+                        # Log de datos recibidos
+                        print(f"[DEBUG] Record values: {data}")
 
                         # Si no hay deviceId, usamos el mac como deviceId
                         if 'deviceId' not in data and 'mac' in data:
@@ -63,10 +71,11 @@ class InfluxDBLecturaRepository(LecturaRepositoryInterface):
                         results.append(lectura)
                     except Exception as validation_error:
                         # Log del error para debugging
-                        print(f"Error validando datos: {validation_error}")
-                        print(f"Datos recibidos: {record.values}")
+                        print(f"[ERROR] Error validando datos: {validation_error}")
+                        print(f"[ERROR] Datos recibidos: {record.values}")
                         continue  # Saltamos este registro y continuamos con el siguiente
 
+            print(f"[DEBUG] Total results: {len(results)}")
             return results
         except InfluxDBError as e:
             raise HTTPException(
