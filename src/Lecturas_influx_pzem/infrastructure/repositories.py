@@ -25,7 +25,7 @@ class InfluxDBLecturaRepository(LecturaRepositoryInterface):
         # Construcción de la consulta Flux
         flux_query = f'''
         from(bucket: "{INFLUX_BUCKET}")
-          |> range(start: -{time_range.value})
+          |> range(start: -30d)
           |> filter(fn: (r) => r["_measurement"] == "energy_metrics")
         '''
 
@@ -38,7 +38,8 @@ class InfluxDBLecturaRepository(LecturaRepositoryInterface):
         
         # deviceId es un field - filtrar DESPUÉS del pivot
         if device_id:
-            flux_query += f'\n  |> filter(fn: (r) => r["deviceId"] == "{device_id}")'
+            # Convertir a string para comparación
+            flux_query += f'\n  |> filter(fn: (r) => string(v: r["deviceId"]) == "{device_id}")'
         
         flux_query += '\n  |> sort(columns: ["_time"], desc: true)'
         flux_query += '\n  |> limit(n: 1000)'
@@ -53,15 +54,18 @@ class InfluxDBLecturaRepository(LecturaRepositoryInterface):
 
             # Mapeamos los resultados a nuestro esquema Pydantic
             results = []
+            table_count = 0
             for table in tables:
-                print(f"[DEBUG] Processing table with {len(table.records)} records")
+                table_count += 1
+                print(f"[DEBUG] Processing table #{table_count} with {len(table.records)} records")
                 for record in table.records:
                     try:
                         # Preparamos los datos para el modelo
                         data = record.values.copy()
                         
-                        # Log de datos recibidos
-                        print(f"[DEBUG] Record values: {data}")
+                        # Log de datos recibidos (solo primeros 3 registros)
+                        if len(results) < 3:
+                            print(f"[DEBUG] Record values: {data}")
 
                         # Si no hay deviceId, usamos el mac como deviceId
                         if 'deviceId' not in data and 'mac' in data:
@@ -76,6 +80,7 @@ class InfluxDBLecturaRepository(LecturaRepositoryInterface):
                         print(f"[ERROR] Datos recibidos: {record.values}")
                         continue  # Saltamos este registro y continuamos con el siguiente
 
+            print(f"[DEBUG] Total tables: {table_count}")
             print(f"[DEBUG] Total results: {len(results)}")
             return results
         except InfluxDBError as e:
