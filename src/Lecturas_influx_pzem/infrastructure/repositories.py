@@ -29,16 +29,17 @@ class InfluxDBLecturaRepository(LecturaRepositoryInterface):
           |> filter(fn: (r) => r["_measurement"] == "energy_metrics")
         '''
 
-        # Añadimos el filtro por MAC si se proporciona (verificar si es tag o field)
+        # MAC es un tag - filtrar ANTES del pivot
         if mac:
             flux_query += f'\n  |> filter(fn: (r) => r["mac"] == "{mac}")'
 
-        # Añadimos el filtro por deviceId si se proporciona
-        if device_id:
-            flux_query += f'\n  |> filter(fn: (r) => r["deviceId"] == "{device_id}")'
-
         # Pivotamos para tener los campos como columnas
         flux_query += '\n  |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")'
+        
+        # deviceId es un field - filtrar DESPUÉS del pivot
+        if device_id:
+            flux_query += f'\n  |> filter(fn: (r) => r["deviceId"] == "{device_id}")'
+        
         flux_query += '\n  |> sort(columns: ["_time"], desc: true)'
         flux_query += '\n  |> limit(n: 1000)'
 
